@@ -1,15 +1,34 @@
 # REPLICATOR 2
 
-Installation interactive — Festival du Peu 2026
+Installation interactive — Festival du Peu 2026  
 Le Broc, Alpes-Maritimes (06) — 29 mai au 21 juin 2026
 
 ---
 
 ## Concept
 
-Une imprimante 3D Creality CR10S devient une oeuvre interactive.
-Les visiteurs pilotent ses mouvements depuis une tablette tactile ou leur telephone.
+Une imprimante 3D Creality CR10S devient une œuvre interactive.
+
+Les visiteurs pilotent ses mouvements depuis une tablette tactile ou leur téléphone.  
 La machine ne produit rien. Elle performe.
+
+---
+
+## Architecture
+
+Système autonome, sans connexion internet.
+
+```
+Raspberry Pi (autonome)
+├── OctoPrint (port 5000) → contrôle CR10S
+├── Nginx (port 80)       → interface web (PWA)
+├── App locale            → UI visiteurs/admin
+└── Hotspot WiFi          → accès visiteurs
+
+↓
+Tablette HDMI (mode kiosk)
+Téléphones visiteurs (WiFi local)
+```
 
 ---
 
@@ -18,11 +37,12 @@ La machine ne produit rien. Elle performe.
 | Composant | Technologie |
 |---|---|
 | Cerveau | Raspberry Pi 3B+ |
-| Controle imprimante | OctoPrint (OctoPi) |
+| Contrôle imprimante | OctoPrint (OctoPi) |
 | Imprimante | Creality CR10S |
-| Interface visiteur | PWA HTML/JS (ce repo) |
-| Acces distant | Tailscale + VPS |
-| Coordination | Discord |
+| Interface | PWA HTML / JS |
+| Serveur local | Nginx |
+| Réseau | Hotspot WiFi Raspberry Pi |
+| Coordination | GitHub + Discord |
 
 ---
 
@@ -31,14 +51,14 @@ La machine ne produit rien. Elle performe.
 ```
 replicator2/
 ├── app/
-│   └── replicator2.html     # App PWA complete (visiteur + admin)
+│   └── index.html
 ├── gcode/
-│   ├── choreo_1.gcode       # Choreographie 1
-│   ├── choreo_2.gcode       # Choreographie 2
-│   ├── choreo_3.gcode       # Choreographie 3
-│   └── choreo_4.gcode       # Choreographie 4
+│   ├── choreo_1.gcode
+│   ├── choreo_2.gcode
+│   ├── choreo_3.gcode
+│   └── choreo_4.gcode
 ├── scripts/
-│   └── gpio_trigger.py      # Declenchement par detecteur d'appui
+│   └── gpio_trigger.py
 ├── docs/
 │   └── cahier-des-charges.docx
 ├── .gitignore
@@ -49,82 +69,121 @@ replicator2/
 
 ## Configuration
 
-Ouvrir `app/replicator2.html` et modifier le bloc `CONFIG` en haut du fichier :
+Modifier dans `app/index.html` :
 
 ```javascript
 const CONFIG = {
-  OCTOPRINT_URL:  "http://192.168.1.42",  // IP du Raspberry Pi
-  API_KEY:        "VOTRE_CLE_API",         // Cle API OctoPrint
-  ADMIN_PASSWORD: "mot-de-passe",          // Acces mode admin
-  DEFAULT_FEED:   1500,                    // Vitesse par defaut mm/min
-  DEFAULT_STEP:   10,                      // Pas de jog par defaut mm
+  OCTOPRINT_URL:  "http://10.0.0.1:5000",
+  API_KEY:        "VOTRE_CLE_API",
+  ADMIN_PASSWORD: "mot-de-passe",
+  DEFAULT_FEED:   1500,
+  DEFAULT_STEP:   10,
 }
 ```
 
 ---
 
-## Deploiement
+## Déploiement (Raspberry Pi)
 
-### Sur le Raspberry Pi (tablette kiosk)
+### Copier les fichiers
 
 ```bash
-# Copier l'app sur le Pi
-scp app/replicator2.html pi@IP-DU-PI:/home/pi/
-
-# Lancer Chromium en mode kiosk au demarrage
-# Ajouter dans /etc/rc.local :
-chromium-browser --kiosk --noerrdialogs file:///home/pi/replicator2.html
+mkdir -p /home/pi/replicator2
+cp -r app/* /home/pi/replicator2/
 ```
 
-### Sur le VPS (acces distant)
+### Installer Nginx
 
 ```bash
-scp app/replicator2.html user@VPS:/var/www/html/replicator2/index.html
+sudo apt install nginx -y
+```
+
+### Configurer Nginx
+
+```bash
+sudo nano /etc/nginx/sites-available/default
+```
+
+```nginx
+server {
+    listen 80;
+    root /home/pi/replicator2;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+}
+```
+
+```bash
+sudo systemctl restart nginx
 ```
 
 ---
 
-## Acces
+## Mode Kiosk
+
+```bash
+chromium-browser --kiosk http://localhost
+```
+
+---
+
+## Réseau (Mode Expo)
+
+Le Raspberry Pi agit comme point d'accès WiFi.
+
+SSID : REPLICATOR2  
+Accès visiteurs : http://10.0.0.1  
+
+Aucune connexion internet requise.
+
+---
+
+## Accès
 
 | Surface | URL | Profil |
 |---|---|---|
-| Tablette sur place | fichier local kiosk | Visiteur |
-| Telephone visiteur | http://IP-PI ou VPS | Visiteur |
-| Admin Vietnam | https://VPS/replicator2 + mot de passe | Admin |
-| Admin Nice | idem ou Tailscale direct | Admin |
+| Tablette (kiosk) | http://localhost | Visiteur |
+| Téléphone visiteur | http://10.0.0.1 | Visiteur |
+| Admin (local) | http://10.0.0.1 | Admin |
 
 ---
 
-## Reseau (Tailscale)
+## Fonctionnalités
 
-Tailscale cree un tunnel direct entre Vietnam et le Pi a Nice.
+### Visiteur
+- Lancer une chorégraphie
+- Contrôle simplifié
 
-```bash
-# Installation sur le Pi (une seule fois)
-curl -fsSL https://tailscale.com/install.sh | sh
-sudo tailscale up
-
-# Depuis Vietnam : acceder au Pi via son IP Tailscale
-ssh pi@100.64.0.XX
-```
-
----
-
-## Equipe
-
-- Artiste : Nice, France
-- Technique : Da Nang, Vietnam (remote)
+### Admin
+- Contrôle axes X/Y/Z
+- Envoi G-code
+- Paramétrage
 
 ---
 
 ## Statut
 
-- [x] Cahier des charges
-- [x] Proto app PWA
-- [ ] Installation OctoPrint sur Pi
+- [x] Concept validé
+- [x] Prototype app PWA
+- [ ] Installation OctoPrint
 - [ ] Connexion CR10S
-- [ ] Tailscale configure
-- [ ] Choreographies testees sur machine
-- [ ] Deploy VPS
-- [ ] Tests complets
-- [ ] Ouverture festival 29 mai 2026
+- [ ] Setup hotspot WiFi
+- [ ] Intégration meuble
+- [ ] Chorégraphies calibrées
+- [ ] Mode kiosk tablette
+- [ ] Tests visiteurs
+- [ ] Installation chapelle
+
+---
+
+## Équipe
+
+- Artiste : Nice, France  
+- Technique : Da Nang, Vietnam (remote)
+
+---
+
+Replicator 2 — une machine qui ne fabrique rien, mais qui performe.
