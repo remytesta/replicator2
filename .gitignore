@@ -1,0 +1,32 @@
+# Config sensible — ne jamais commiter
+config.local.js
+.env
+.env.local
+
+# API keys et mots de passe
+secrets.json
+api_key.txt
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editeurs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/
+
+# Node (si on ajoute un build tool plus tard)
+node_modules/
+dist/
+.cache/
+
+# Pi / SSH
+*.pem
+*.key
+known_hosts
