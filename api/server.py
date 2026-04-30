@@ -1,0 +1,140 @@
+#!/usr/bin/env python3
+"""
+REPLICATOR 2 — Serveur API Flask
+Pont entre la PWA et OctoPrint / GPIO
+Port : 8080
+"""
+
+from flask import Flask, jsonify, request
+from flask_cors import CORS
+from octoprint_client import OctoPrintClient
+from gpio_controller import GPIOController
+import os
+
+app = Flask(__name__)
+CORS(app)
+
+# --- Config ---
+OCTOPRINT_URL = os.environ.get("OCTOPRINT_URL", "http://127.0.0.1:5000")
+OCTOPRINT_KEY = os.environ.get("OCTOPRINT_KEY", "VOTRE_CLE_API")
+GCODE_DIR     = os.environ.get("GCODE_DIR", "/home/pi/replicator2/gcode")
+
+octo = OctoPrintClient(OCTOPRINT_URL, OCTOPRINT_KEY)
+gpio = GPIOController()
+
+# =============================================================
+# Utilitaire
+# =============================================================
+
+def ok(msg="OK"):
+    return jsonify({"status": "ok", "message": msg})
+
+def err(msg, code=500):
+    return jsonify({"status": "error", "message": msg}), code
+
+# =============================================================
+# Statut général
+# =============================================================
+
+@app.route("/api/status", methods=["GET"])
+def status():
+    printer = octo.get_printer_state()
+    return jsonify({
+        "status": "ok",
+        "octoprint": printer,
+        "fans": gpio.get_states(),
+    })
+
+# =============================================================
+# Moteurs — M17 (on) / M18 (off)
+# =============================================================
+
+MOTOR_AXES = {"1": "X", "2": "Y", "3": "Z", "4": "E"}
+
+@app.route("/api/motor/<motor_id>/<action>", methods=["POST"])
+def motor(motor_id, action):
+    axis = MOTOR_AXES.get(motor_id)
+    if not axis:
+        return err(f"Moteur {motor_id} inconnu. Valeurs : 1, 2, 3, 4")
+    if action not in ("on", "off"):
+        return err("Action invalide. Valeurs : on, off")
+
+    cmd = f"M17 {axis}" if action == "on" else f"M18 {axis}"
+    result = octo.send_gcode(cmd)
+    if result:
+        return ok(f"Moteur {motor_id} ({axis}) -> {action.upper()}")
+    return err("Erreur communication OctoPrint")
+
+# =============================================================
+# Plateau chauffant — M140
+# =============================================================
+
+@app.route("/api/bed/<action>", methods=["POST"])
+def bed(action):
+    data = request.get_json(silent=True) or {}
+    if action == "on":
+        temp = data.get("temp", 60)
+        result = octo.send_gcode(f"M140 S{temp}")
+        return ok(f"Plateau chauffant ON à {temp}°C") if result else err("Erreur OctoPrint")
+    elif action == "off":
+        result = octo.send_gcode("M140 S0")
+        return ok("Plateau chauffant OFF") if result else err("Erreur OctoPrint")
+    return err("Action invalide. Valeurs : on, off")
+
+# =============================================================
+# Tête chauffante — M104
+# =============================================================
+
+@app.route("/api/hotend/<action>", methods=["POST"])
+def hotend(action):
+    data = request.get_json(silent=True) or {}
+    if action == "on":
+        temp = data.get("temp", 200)
+        result = octo.send_gcode(f"M104 S{temp}")
+        return ok(f"Tête chauffante ON à {temp}°C") if result else err("Erreur OctoPrint")
+    elif action == "off":
+        result = octo.send_gcode("M104 S0")
+        return ok("Tête chauffante OFF") if result else err("Erreur OctoPrint")
+    return err("Action invalide. Valeurs : on, off")
+
+# =============================================================
+# Ventilateurs — GPIO
+# =============================================================
+
+@app.route("/api/fan/<fan_id>/<action>", methods=["POST"])
+def fan(fan_id, action):
+    if fan_id not in ("1", "2"):
+        return err("Ventilateur inconnu. Valeurs : 1, 2")
+    if action not in ("on", "off"):
+        return err("Action invalide. Valeurs : on, off")
+    result = gpio.set_fan(int(fan_id), action == "on")
+    return ok(f"Ventilateur {fan_id} -> {action.upper()}") if result else err("Erreur GPIO")
+
+# =============================================================
+# Chorégraphies — envoi de fichier G-code complet
+# =============================================================
+
+@app.route("/api/choreo/run/<choreo_id>", methods=["POST"])
+def choreo_run(choreo_id):
+    gcode_path = os.path.join(GCODE_DIR, f"choreo_{choreo_id}.gcode")
+    if not os.path.exists(gcode_path):
+        return err(f"Fichier choreo_{choreo_id}.gcode introuvable")
+    result = octo.upload_and_print(gcode_path)
+    return ok(f"Chorégraphie {choreo_id} lancée") if result else err("Erreur OctoPrint")
+
+@app.route("/api/choreo/stop", methods=["POST"])
+def choreo_stop():
+    # Stoppe l'impression + éteint les chauffages
+    octo.send_gcode("M524")   # annule l'impression
+    octo.send_gcode("M104 S0")
+    octo.send_gcode("M140 S0")
+    octo.send_gcode("M18")    # coupe tous les moteurs
+    gpio.all_fans_off()
+    return ok("Tout arrêté proprement")
+
+# =============================================================
+# Lancement
+# =============================================================
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=8080, debug=False)

@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#ffffff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>REPLICATOR 2</title>
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+
+<style>
+  /* =============================================
+     VARIABLES & RESET
+  ============================================= */
+  :root {
+    --bg:         #ffffff;
+    --bg-off:     #f5f4f2;
+    --border:     #e2e0dc;
+    --text:       #111110;
+    --muted:      #888784;
+    --on:         #111110;
+    --on-text:    #ffffff;
+    --heat:       #c94f1a;
+    --heat-bg:    #fdf1ec;
+    --heat-border:#f0c4b0;
+    --mono:       'DM Mono', monospace;
+    --sans:       'Syne', sans-serif;
+    --radius:     2px;
+    --transition: 160ms ease;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 14px;
+    line-height: 1.4;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* =============================================
+     LAYOUT
+  ============================================= */
+  .app {
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 0 0 80px;
+  }
+
+  /* =============================================
+     HEADER
+  ============================================= */
+  header {
+    padding: 32px 24px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+
+  .logo {
+    font-family: var(--sans);
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    line-height: 1;
+  }
+
+  .logo span {
+    display: block;
+    font-size: 11px;
+    font-weight: 400;
+    font-family: var(--mono);
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: background var(--transition);
+    flex-shrink: 0;
+    margin-bottom: 4px;
+  }
+
+  .status-dot.connected { background: #2d9e2d; }
+  .status-dot.error     { background: #c94f1a; }
+
+  /* =============================================
+     SECTIONS
+  ============================================= */
+  section {
+    padding: 24px 24px 0;
+  }
+
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+    font-family: var(--mono);
+  }
+
+  /* =============================================
+     DIVIDER
+  ============================================= */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 24px 24px 0;
+  }
+
+  /* =============================================
+     TOGGLE BUTTONS (moteurs, ventilateurs)
+  ============================================= */
+  .toggle-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .toggle-grid.four { grid-template-columns: 1fr 1fr 1fr 1fr; }
+
+  .toggle-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg);
+    cursor: pointer;
+    transition: all var(--transition);
+    user-select: none;
+    gap: 6px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .toggle-btn:active { opacity: 0.7; }
+
+  .toggle-btn .btn-label {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    transition: color var(--transition);
+  }
+
+  .toggle-btn .btn-value {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: 0.02em;
+  }
+
+  .toggle-btn .btn-state {
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: auto;
+  }
+
+  /* Active state */
+  .toggle-btn.active {
+    background: var(--on);
+    border-color: var(--on);
+  }
+
+  .toggle-btn.active .btn-label { color: rgba(255,255,255,0.5); }
+  .toggle-btn.active .btn-value { color: var(--on-text); }
+  .toggle-btn.active .btn-state { color: rgba(255,255,255,0.5); }
+
+  /* =============================================
+     HEAT CONTROLS (plateau + tête)
+  ============================================= */
+  .heat-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 8px;
+    transition: border-color var(--transition);
+  }
+
+  .heat-card.active {
+    border-color: var(--heat-border);
+    background: var(--heat-bg);
+  }
+
+  .heat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .heat-header:active { opacity: 0.7; }
+
+  .heat-info { display: flex; flex-direction: column; gap: 3px; }
+
+  .heat-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .heat-temp-display {
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .heat-temp-display.hot { color: var(--heat); }
+
+  .heat-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .heat-state-label {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* Pill toggle */
+  .pill {
+    width: 40px;
+    height: 22px;
+    border-radius: 11px;
+    background: var(--border);
+    position: relative;
+    transition: background var(--transition);
+    flex-shrink: 0;
+  }
+
+  .pill::after {
+    content: '';
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: white;
+    transition: transform var(--transition);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+
+  .active .pill { background: var(--heat); }
+  .active .pill::after { transform: translateX(18px); }
+
+  /* Temp slider (expanded) */
+  .heat-body {
+    padding: 0 16px 14px;
+    display: none;
+  }
+
+  .heat-card.active .heat-body { display: block; }
+
+  .temp-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .temp-row input[type=range] {
+    flex: 1;
+    -webkit-appearance: none;
+    height: 2px;
+    background: var(--heat-border);
+    border-radius: 1px;
+    outline: none;
+  }
+
+  .temp-row input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--heat);
+    cursor: pointer;
+  }
+
+  .temp-value {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--heat);
+    min-width: 46px;
+    text-align: right;
+  }
+
+  /* =============================================
+     CHORÉGRAPHIES
+  ============================================= */
+  .choreo-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .choreo-btn {
+    padding: 20px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg);
+    cursor: pointer;
+    text-align: left;
+    transition: all var(--transition);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .choreo-btn:active { background: var(--bg-off); }
+
+  .choreo-btn.playing {
+    border-color: var(--text);
+    background: var(--bg-off);
+  }
+
+  .choreo-num {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+
+  .choreo-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .choreo-status {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 6px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .choreo-btn.playing .choreo-status { color: var(--text); }
+
+  /* Stop button */
+  .stop-btn {
+    width: 100%;
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg);
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    transition: all var(--transition);
+    margin-top: 8px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .stop-btn:active  { background: #fff0ec; border-color: var(--heat-border); color: var(--heat); }
+  .stop-btn.urgent  { border-color: var(--heat); color: var(--heat); }
+
+  /* =============================================
+     TEMPERATURE STATUS BAR
+  ============================================= */
+  .temp-bar {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+
+  .temp-bar-item {
+    flex: 1;
+    padding: 10px 14px;
+    border-right: 1px solid var(--border);
+  }
+
+  .temp-bar-item:last-child { border-right: none; }
+
+  .temp-bar-label {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+
+  .temp-bar-val {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .temp-bar-val.hot { color: var(--heat); }
+
+  /* =============================================
+     TOAST NOTIFICATIONS
+  ============================================= */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--text);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 100px;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    opacity: 0;
+    transition: all 300ms ease;
+    white-space: nowrap;
+    z-index: 100;
+    pointer-events: none;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* =============================================
+     ADMIN SECTION
+  ============================================= */
+  .admin-toggle {
+    text-align: center;
+    padding: 20px 24px 0;
+  }
+
+  .admin-toggle button {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+  }
+
+  .admin-panel {
+    display: none;
+    padding: 16px 24px 0;
+  }
+
+  .admin-panel.visible { display: block; }
+
+  .admin-input {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .admin-input input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-family: var(--mono);
+    font-size: 13px;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+  }
+
+  .admin-input input:focus { border-color: var(--text); }
+
+  .admin-input button {
+    padding: 10px 16px;
+    border: 1px solid var(--text);
+    border-radius: var(--radius);
+    background: var(--text);
+    color: white;
+    font-family: var(--mono);
+    font-size: 12px;
+    cursor: pointer;
+    letter-spacing: 0.06em;
+  }
+
+  /* =============================================
+     RESPONSIVE
+  ============================================= */
+  @media (max-width: 380px) {
+    header { padding: 24px 16px 20px; }
+    section { padding: 20px 16px 0; }
+    .divider { margin: 20px 16px 0; }
+    .toggle-grid.four { grid-template-columns: 1fr 1fr; }
+    .admin-toggle, .admin-panel { padding-left: 16px; padding-right: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- =============================================
+     CONFIG — Modifier après installation
+============================================= -->
+<script>
+const CONFIG = {
+  API_URL:        "http://10.0.0.1:8080",    // URL du serveur Flask
+  ADMIN_PASSWORD: "replicator2026",           // Mot de passe admin
+  BED_TEMP_DEFAULT:    60,                    // Température plateau (°C)
+  HOTEND_TEMP_DEFAULT: 200,                   // Température tête (°C)
+  STATUS_INTERVAL: 5000,                      // Rafraîchissement statut (ms)
+  CHOREO_NAMES: [
+    "Séquence I",
+    "Séquence II",
+    "Séquence III",
+    "Séquence IV",
+  ],
+};
+</script>
+
+<!-- =============================================
+     APP
+============================================= -->
+<div class="app">
+
+  <!-- Header -->
+  <header>
+    <div class="logo">
+      <span>Installation — 2026</span>
+      REPLICATOR 2
+    </div>
+    <div class="status-dot" id="statusDot"></div>
+  </header>
+
+  <!-- Températures en direct -->
+  <section>
+    <div class="section-label">Températures</div>
+    <div class="temp-bar">
+      <div class="temp-bar-item">
+        <div class="temp-bar-label">Plateau</div>
+        <div class="temp-bar-val" id="tempBed">—</div>
+      </div>
+      <div class="temp-bar-item">
+        <div class="temp-bar-label">Tête</div>
+        <div class="temp-bar-val" id="tempHotend">—</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- Moteurs -->
+  <section>
+    <div class="section-label">Moteurs</div>
+    <div class="toggle-grid four">
+      <button class="toggle-btn" data-type="motor" data-id="1" onclick="toggleMotor(1)">
+        <span class="btn-label">Axe X</span>
+        <span class="btn-value">M1</span>
+        <span class="btn-state">off</span>
+      </button>
+      <button class="toggle-btn" data-type="motor" data-id="2" onclick="toggleMotor(2)">
+        <span class="btn-label">Axe Y</span>
+        <span class="btn-value">M2</span>
+        <span class="btn-state">off</span>
+      </button>
+      <button class="toggle-btn" data-type="motor" data-id="3" onclick="toggleMotor(3)">
+        <span class="btn-label">Axe Z</span>
+        <span class="btn-value">M3</span>
+        <span class="btn-state">off</span>
+      </button>
+      <button class="toggle-btn" data-type="motor" data-id="4" onclick="toggleMotor(4)">
+        <span class="btn-label">Extrud.</span>
+        <span class="btn-value">M4</span>
+        <span class="btn-state">off</span>
+      </button>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- Chauffe -->
+  <section>
+    <div class="section-label">Chauffe</div>
+
+    <!-- Plateau chauffant -->
+    <div class="heat-card" id="bedCard">
+      <div class="heat-header" onclick="toggleHeat('bed')">
+        <div class="heat-info">
+          <div class="heat-name">Plateau chauffant</div>
+          <div class="heat-temp-display" id="bedTempLabel">Cible : <span id="bedTempTarget">60</span>°C</div>
+        </div>
+        <div class="heat-toggle">
+          <span class="heat-state-label" id="bedStateLabel">off</span>
+          <div class="pill"></div>
+        </div>
+      </div>
+      <div class="heat-body">
+        <div class="temp-row">
+          <input type="range" min="30" max="110" value="60" id="bedSlider"
+            oninput="document.getElementById('bedTempTarget').textContent=this.value">
+          <span class="temp-value"><span id="bedSliderVal">60</span>°C</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tête chauffante -->
+    <div class="heat-card" id="hotendCard">
+      <div class="heat-header" onclick="toggleHeat('hotend')">
+        <div class="heat-info">
+          <div class="heat-name">Tête chauffante</div>
+          <div class="heat-temp-display" id="hotendTempLabel">Cible : <span id="hotendTempTarget">200</span>°C</div>
+        </div>
+        <div class="heat-toggle">
+          <span class="heat-state-label" id="hotendStateLabel">off</span>
+          <div class="pill"></div>
+        </div>
+      </div>
+      <div class="heat-body">
+        <div class="temp-row">
+          <input type="range" min="150" max="280" value="200" id="hotendSlider"
+            oninput="document.getElementById('hotendTempTarget').textContent=this.value">
+          <span class="temp-value"><span id="hotendSliderVal">200</span>°C</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- Ventilateurs -->
+  <section>
+    <div class="section-label">Ventilateurs</div>
+    <div class="toggle-grid">
+      <button class="toggle-btn" data-type="fan" data-id="1" onclick="toggleFan(1)">
+        <span class="btn-label">Ventilateur</span>
+        <span class="btn-value">FAN 1</span>
+        <span class="btn-state">off</span>
+      </button>
+      <button class="toggle-btn" data-type="fan" data-id="2" onclick="toggleFan(2)">
+        <span class="btn-label">Ventilateur</span>
+        <span class="btn-value">FAN 2</span>
+        <span class="btn-state">off</span>
+      </button>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- Chorégraphies -->
+  <section>
+    <div class="section-label">Chorégraphies</div>
+    <div class="choreo-grid" id="choreoGrid"></div>
+    <button class="stop-btn" id="stopBtn" onclick="stopAll()">
+      Arrêt d'urgence — tout stopper
+    </button>
+  </section>
+
+  <!-- Admin toggle -->
+  <div class="admin-toggle">
+    <button onclick="toggleAdmin()">· Admin ·</button>
+  </div>
+
+  <!-- Admin panel -->
+  <div class="admin-panel" id="adminPanel">
+    <div class="section-label">G-code manuel</div>
+    <div class="admin-input">
+      <input type="text" id="gcodeInput" placeholder="ex: G28 X Y" autocomplete="off" autocorrect="off">
+      <button onclick="sendGcode()">Envoyer</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- =============================================
+     LOGIQUE
+============================================= -->
+<script>
+// --- Etat local ---
+const state = {
+  motors:  { 1: false, 2: false, 3: false, 4: false },
+  fans:    { 1: false, 2: false },
+  bed:     false,
+  hotend:  false,
+  playing: null,
+  adminUnlocked: false,
+};
+
+// --- API call ---
+async function api(endpoint, method = "POST", body = null) {
+  try {
+    const opts = { method, headers: { "Content-Type": "application/json" } };
+    if (body) opts.body = JSON.stringify(body);
+    const r = await fetch(CONFIG.API_URL + endpoint, opts);
+    return await r.json();
+  } catch (e) {
+    toast("Erreur réseau");
+    return null;
+  }
+}
+
+// --- Toast ---
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("show"), 2200);
+}
+
+// --- Status poll ---
+async function pollStatus() {
+  const data = await api("/api/status", "GET");
+  const dot = document.getElementById("statusDot");
+  if (!data) { dot.className = "status-dot error"; return; }
+
+  dot.className = "status-dot " + (data.octoprint?.connected ? "connected" : "error");
+
+  const bed    = data.octoprint?.bed_temp ?? null;
+  const hotend = data.octoprint?.hotend_temp ?? null;
+
+  const bedEl    = document.getElementById("tempBed");
+  const hotendEl = document.getElementById("tempHotend");
+
+  bedEl.textContent    = bed    !== null ? bed + "°C"    : "—";
+  hotendEl.textContent = hotend !== null ? hotend + "°C" : "—";
+
+  bedEl.className    = "temp-bar-val" + (bed    > 40  ? " hot" : "");
+  hotendEl.className = "temp-bar-val" + (hotend > 100 ? " hot" : "");
+}
+
+// --- Moteurs ---
+function toggleMotor(id) {
+  state.motors[id] = !state.motors[id];
+  const action = state.motors[id] ? "on" : "off";
+  api(`/api/motor/${id}/${action}`).then(r => {
+    if (!r) { state.motors[id] = !state.motors[id]; return; }
+    updateMotorBtn(id);
+    toast(`Moteur ${id} — ${action.toUpperCase()}`);
+  });
+}
+
+function updateMotorBtn(id) {
+  const btn = document.querySelector(`.toggle-btn[data-type="motor"][data-id="${id}"]`);
+  if (!btn) return;
+  const on = state.motors[id];
+  btn.classList.toggle("active", on);
+  btn.querySelector(".btn-state").textContent = on ? "on" : "off";
+}
+
+// --- Chauffe ---
+function toggleHeat(type) {
+  const isOn = type === "bed" ? state.bed : state.hotend;
+  const newState = !isOn;
+  const action = newState ? "on" : "off";
+  const body = newState ? { temp: getTemp(type) } : null;
+
+  api(`/api/${type}/${action}`, "POST", body).then(r => {
+    if (!r) return;
+    if (type === "bed") state.bed = newState;
+    else state.hotend = newState;
+    updateHeatCard(type);
+    toast(`${type === "bed" ? "Plateau" : "Tête"} — ${action.toUpperCase()}`);
+  });
+}
+
+function getTemp(type) {
+  return parseInt(document.getElementById(type === "bed" ? "bedSlider" : "hotendSlider").value);
+}
+
+function updateHeatCard(type) {
+  const card      = document.getElementById(type === "bed" ? "bedCard" : "hotendCard");
+  const stateLabel = document.getElementById(type === "bed" ? "bedStateLabel" : "hotendStateLabel");
+  const on         = type === "bed" ? state.bed : state.hotend;
+  card.classList.toggle("active", on);
+  stateLabel.textContent = on ? "on" : "off";
+}
+
+// Sync sliders affichage
+document.getElementById("bedSlider").addEventListener("input", function() {
+  document.getElementById("bedSliderVal").textContent = this.value;
+  document.getElementById("bedTempTarget").textContent = this.value;
+});
+
+document.getElementById("hotendSlider").addEventListener("input", function() {
+  document.getElementById("hotendSliderVal").textContent = this.value;
+  document.getElementById("hotendTempTarget").textContent = this.value;
+});
+
+// --- Ventilateurs ---
+function toggleFan(id) {
+  state.fans[id] = !state.fans[id];
+  const action = state.fans[id] ? "on" : "off";
+  api(`/api/fan/${id}/${action}`).then(r => {
+    if (!r) { state.fans[id] = !state.fans[id]; return; }
+    updateFanBtn(id);
+    toast(`Ventilateur ${id} — ${action.toUpperCase()}`);
+  });
+}
+
+function updateFanBtn(id) {
+  const btn = document.querySelector(`.toggle-btn[data-type="fan"][data-id="${id}"]`);
+  if (!btn) return;
+  const on = state.fans[id];
+  btn.classList.toggle("active", on);
+  btn.querySelector(".btn-state").textContent = on ? "on" : "off";
+}
+
+// --- Chorégraphies ---
+function buildChoreoGrid() {
+  const grid = document.getElementById("choreoGrid");
+  grid.innerHTML = CONFIG.CHOREO_NAMES.map((name, i) => `
+    <button class="choreo-btn" id="choreo-${i+1}" onclick="runChoreo(${i+1})">
+      <div class="choreo-num">0${i+1}</div>
+      <div class="choreo-name">${name}</div>
+      <div class="choreo-status">—</div>
+    </button>
+  `).join("");
+}
+
+function runChoreo(id) {
+  if (state.playing) stopAll();
+  api(`/api/choreo/run/${id}`).then(r => {
+    if (!r) return;
+    state.playing = id;
+    document.querySelectorAll(".choreo-btn").forEach(b => {
+      b.classList.remove("playing");
+      b.querySelector(".choreo-status").textContent = "—";
+    });
+    const btn = document.getElementById(`choreo-${id}`);
+    if (btn) {
+      btn.classList.add("playing");
+      btn.querySelector(".choreo-status").textContent = "en cours";
+    }
+    document.getElementById("stopBtn").classList.add("urgent");
+    toast(`Chorégraphie ${id} lancée`);
+  });
+}
+
+async function stopAll() {
+  await api("/api/choreo/stop");
+  state.playing = null;
+  state.motors  = { 1: false, 2: false, 3: false, 4: false };
+  state.fans    = { 1: false, 2: false };
+  state.bed     = false;
+  state.hotend  = false;
+  [1,2,3,4].forEach(updateMotorBtn);
+  [1,2].forEach(updateFanBtn);
+  updateHeatCard("bed");
+  updateHeatCard("hotend");
+  document.querySelectorAll(".choreo-btn").forEach(b => {
+    b.classList.remove("playing");
+    b.querySelector(".choreo-status").textContent = "—";
+  });
+  document.getElementById("stopBtn").classList.remove("urgent");
+  toast("Tout arrêté");
+}
+
+// --- Admin ---
+function toggleAdmin() {
+  if (!state.adminUnlocked) {
+    const pwd = prompt("Mot de passe admin :");
+    if (pwd !== CONFIG.ADMIN_PASSWORD) { toast("Mot de passe incorrect"); return; }
+    state.adminUnlocked = true;
+  }
+  const panel = document.getElementById("adminPanel");
+  panel.classList.toggle("visible");
+}
+
+async function sendGcode() {
+  const input = document.getElementById("gcodeInput");
+  const cmd = input.value.trim();
+  if (!cmd) return;
+  const r = await api("/api/gcode", "POST", { command: cmd });
+  if (r) { toast("G-code envoyé"); input.value = ""; }
+}
+
+// --- Init ---
+buildChoreoGrid();
+pollStatus();
+setInterval(pollStatus, CONFIG.STATUS_INTERVAL);
+</script>
+
+</body>
+</html>

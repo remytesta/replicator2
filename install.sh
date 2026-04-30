@@ -7,13 +7,12 @@
 #  A exécuter sur un Raspberry Pi 3B+ sous Raspberry Pi OS Lite
 # =============================================================
 
-set -e  # Stoppe le script si une commande échoue
+set -e
 
-# --- Couleurs pour les messages ---
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 RED='\033[0;31m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
 ok()   { echo -e "${GREEN}[OK]${NC} $1"; }
 info() { echo -e "${YELLOW}[INFO]${NC} $1"; }
@@ -24,12 +23,13 @@ err()  { echo -e "${RED}[ERREUR]${NC} $1"; exit 1; }
 # =============================================================
 
 WIFI_SSID="REPLICATOR2"
-WIFI_PASSWORD="replicator2026"   # Changer pour l'expo
+WIFI_PASSWORD="replicator2026"
 STATIC_IP="10.0.0.1"
 DHCP_RANGE_START="10.0.0.10"
 DHCP_RANGE_END="10.0.0.50"
 PROJECT_DIR="/home/pi/replicator2"
 OCTOPRINT_PORT="5000"
+API_PORT="8080"
 
 # =============================================================
 echo ""
@@ -39,12 +39,6 @@ echo "=================================================="
 echo ""
 # =============================================================
 
-# --- Vérification : on est bien sur un Raspberry Pi ? ---
-if ! grep -q "Raspberry" /proc/cpuinfo 2>/dev/null; then
-  info "Pas de Raspberry Pi détecté — on continue quand même (mode test)."
-fi
-
-# --- Vérification : exécuté en tant que pi (pas root) ---
 if [ "$EUID" -eq 0 ]; then
   err "Ne pas exécuter ce script en root. Utiliser : bash install.sh"
 fi
@@ -52,19 +46,20 @@ fi
 # =============================================================
 # ÉTAPE 1 — Mise à jour du système
 # =============================================================
-info "Étape 1/8 — Mise à jour du système..."
+info "Étape 1/9 — Mise à jour du système..."
 sudo apt update -y && sudo apt upgrade -y
 ok "Système à jour."
 
 # =============================================================
-# ÉTAPE 2 — Installation des paquets nécessaires
+# ÉTAPE 2 — Installation des paquets
 # =============================================================
-info "Étape 2/8 — Installation des logiciels..."
+info "Étape 2/9 — Installation des logiciels..."
 
 sudo apt install -y \
   nginx \
   git \
   python3-pip \
+  python3-venv \
   python3-gpiozero \
   hostapd \
   dnsmasq \
@@ -74,70 +69,124 @@ sudo apt install -y \
 
 ok "Logiciels installés."
 
-# --- Dépendances Python pour le contrôle GPIO ---
-pip3 install RPi.GPIO gpiozero --break-system-packages 2>/dev/null || \
-pip3 install RPi.GPIO gpiozero
-
-ok "Dépendances Python installées."
-
 # =============================================================
 # ÉTAPE 3 — Copie des fichiers du projet
 # =============================================================
-info "Étape 3/8 — Mise en place des fichiers du projet..."
+info "Étape 3/9 — Mise en place des fichiers du projet..."
 
-mkdir -p "$PROJECT_DIR"
+mkdir -p "$PROJECT_DIR/app"
+mkdir -p "$PROJECT_DIR/gcode"
+mkdir -p "$PROJECT_DIR/scripts"
+mkdir -p "$PROJECT_DIR/api"
 
-# Si on est déjà dans le dossier du projet cloné depuis GitHub :
 if [ -d "./app" ]; then
-  cp -r ./app/*     "$PROJECT_DIR/" 2>/dev/null || true
-  cp -r ./gcode     "$PROJECT_DIR/" 2>/dev/null || true
-  cp -r ./scripts   "$PROJECT_DIR/" 2>/dev/null || true
-  ok "Fichiers copiés depuis le dépôt local."
-else
-  info "Dossier app/ non trouvé — à copier manuellement dans $PROJECT_DIR"
+  cp -r ./app/*   "$PROJECT_DIR/app/"   2>/dev/null || true
+  ok "Dossier app/ copié."
+fi
+
+if [ -d "./gcode" ]; then
+  cp -r ./gcode/* "$PROJECT_DIR/gcode/" 2>/dev/null || true
+  ok "Dossier gcode/ copié."
+fi
+
+if [ -d "./api" ]; then
+  cp -r ./api/*   "$PROJECT_DIR/api/"   2>/dev/null || true
+  ok "Dossier api/ copié."
+fi
+
+if [ -d "./scripts" ]; then
+  cp -r ./scripts/* "$PROJECT_DIR/scripts/" 2>/dev/null || true
+  ok "Dossier scripts/ copié."
 fi
 
 # =============================================================
-# ÉTAPE 4 — Configuration de Nginx (serveur web)
+# ÉTAPE 4 — Environnement Python + dépendances Flask
 # =============================================================
-info "Étape 4/8 — Configuration de Nginx..."
+info "Étape 4/9 — Installation de Flask et dépendances Python..."
 
-sudo bash -c "cat > /etc/nginx/sites-available/default << 'EOF'
+python3 -m venv "$PROJECT_DIR/venv"
+"$PROJECT_DIR/venv/bin/pip" install --upgrade pip
+"$PROJECT_DIR/venv/bin/pip" install \
+  flask \
+  flask-cors \
+  requests \
+  RPi.GPIO
+
+ok "Flask et dépendances installés dans l'environnement virtuel."
+
+# =============================================================
+# ÉTAPE 5 — Service systemd pour l'API Flask
+# =============================================================
+info "Étape 5/9 — Configuration du service API Flask..."
+
+sudo bash -c "cat > /etc/systemd/system/replicator-api.service << EOF
+[Unit]
+Description=Replicator 2 — API Flask
+After=network.target octoprint.service
+Requires=octoprint.service
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=$PROJECT_DIR/api
+Environment=OCTOPRINT_URL=http://127.0.0.1:$OCTOPRINT_PORT
+Environment=GCODE_DIR=$PROJECT_DIR/gcode
+ExecStart=$PROJECT_DIR/venv/bin/python server.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF"
+
+sudo systemctl daemon-reload
+sudo systemctl enable replicator-api
+ok "Service API Flask configuré (démarrage automatique)."
+
+# =============================================================
+# ÉTAPE 6 — Configuration de Nginx
+# =============================================================
+info "Étape 6/9 — Configuration de Nginx..."
+
+sudo bash -c "cat > /etc/nginx/sites-available/default << EOF
 server {
     listen 80;
     server_name _;
-    root $PROJECT_DIR;
+    root $PROJECT_DIR/app;
     index index.html;
 
-    # Interface PWA principale
+    # PWA
     location / {
-        try_files \$uri \$uri/ /index.html;
+        try_files \\\$uri \\\$uri/ /index.html;
     }
 
-    # Proxy vers OctoPrint (pour éviter les problèmes CORS)
+    # Proxy API Flask
+    location /api/ {
+        proxy_pass http://127.0.0.1:$API_PORT/api/;
+        proxy_set_header Host \\\$host;
+        proxy_set_header X-Real-IP \\\$remote_addr;
+    }
+
+    # Proxy OctoPrint (accès technique)
     location /octoprint/ {
         proxy_pass http://127.0.0.1:$OCTOPRINT_PORT/;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header Host \\\$host;
+        proxy_set_header X-Real-IP \\\$remote_addr;
     }
 }
 EOF"
 
 sudo nginx -t && sudo systemctl enable nginx && sudo systemctl restart nginx
-ok "Nginx configuré et démarré."
+ok "Nginx configuré."
 
 # =============================================================
-# ÉTAPE 5 — Configuration de l'IP statique
+# ÉTAPE 7 — IP statique
 # =============================================================
-info "Étape 5/8 — Configuration de l'adresse IP fixe ($STATIC_IP)..."
+info "Étape 7/9 — Configuration de l'adresse IP fixe ($STATIC_IP)..."
 
-# Backup de la config existante
 sudo cp /etc/dhcpcd.conf /etc/dhcpcd.conf.backup 2>/dev/null || true
-
-# Supprimer un bloc replicator2 existant s'il y en a un
 sudo sed -i '/# REPLICATOR2 START/,/# REPLICATOR2 END/d' /etc/dhcpcd.conf
 
-# Ajouter la config IP statique
 sudo bash -c "cat >> /etc/dhcpcd.conf << EOF
 
 # REPLICATOR2 START
@@ -147,14 +196,13 @@ interface wlan0
 # REPLICATOR2 END
 EOF"
 
-ok "IP statique configurée."
+ok "IP statique configurée ($STATIC_IP)."
 
 # =============================================================
-# ÉTAPE 6 — Configuration du Hotspot WiFi (REPLICATOR2)
+# ÉTAPE 8 — Hotspot WiFi
 # =============================================================
-info "Étape 6/8 — Configuration du hotspot WiFi '$WIFI_SSID'..."
+info "Étape 8/9 — Configuration du hotspot WiFi '$WIFI_SSID'..."
 
-# --- hostapd : crée le point d'accès WiFi ---
 sudo bash -c "cat > /etc/hostapd/hostapd.conf << EOF
 interface=wlan0
 driver=nl80211
@@ -172,9 +220,10 @@ wpa_pairwise=TKIP
 rsn_pairwise=CCMP
 EOF"
 
-sudo bash -c 'echo "DAEMON_CONF=\"/etc/hostapd/hostapd.conf\"" >> /etc/default/hostapd'
+# Eviter la ligne en double
+grep -q 'DAEMON_CONF' /etc/default/hostapd || \
+  sudo bash -c 'echo "DAEMON_CONF=\"/etc/hostapd/hostapd.conf\"" >> /etc/default/hostapd'
 
-# --- dnsmasq : distribue des adresses IP aux appareils connectés ---
 sudo mv /etc/dnsmasq.conf /etc/dnsmasq.conf.backup 2>/dev/null || true
 sudo bash -c "cat > /etc/dnsmasq.conf << EOF
 interface=wlan0
@@ -183,26 +232,20 @@ domain=local
 address=/replicator.local/$STATIC_IP
 EOF"
 
-# --- Activer les services au démarrage ---
 sudo systemctl unmask hostapd
 sudo systemctl enable hostapd
 sudo systemctl enable dnsmasq
-
-ok "Hotspot WiFi '$WIFI_SSID' configuré (mdp: $WIFI_PASSWORD)."
+ok "Hotspot WiFi '$WIFI_SSID' configuré."
 
 # =============================================================
-# ÉTAPE 7 — Installation d'OctoPrint
+# ÉTAPE 9 — OctoPrint
 # =============================================================
-info "Étape 7/8 — Installation d'OctoPrint..."
+info "Étape 9/9 — Installation d'OctoPrint..."
 
-# Créer un environnement virtuel Python pour OctoPrint
 python3 -m venv /home/pi/oprint
 /home/pi/oprint/bin/pip install --upgrade pip
 /home/pi/oprint/bin/pip install octoprint
 
-ok "OctoPrint installé."
-
-# --- Service systemd pour OctoPrint ---
 sudo bash -c "cat > /etc/systemd/system/octoprint.service << EOF
 [Unit]
 Description=OctoPrint — Replicator 2
@@ -221,55 +264,8 @@ EOF"
 
 sudo systemctl daemon-reload
 sudo systemctl enable octoprint
-ok "OctoPrint configuré comme service (démarrage automatique)."
-
-# --- Accès au port USB (imprimante) pour l'utilisateur pi ---
 sudo usermod -aG dialout pi
-ok "Accès port USB (CR10S) accordé à l'utilisateur pi."
-
-# =============================================================
-# ÉTAPE 8 — Script GPIO pour les ventilateurs
-# =============================================================
-info "Étape 8/8 — Script de contrôle des ventilateurs (GPIO)..."
-
-mkdir -p "$PROJECT_DIR/scripts"
-cat > "$PROJECT_DIR/scripts/gpio_trigger.py" << 'PYEOF'
-#!/usr/bin/env python3
-"""
-REPLICATOR 2 — Contrôle GPIO
-Ventilateurs : GPIO 17 (ventilateur 1), GPIO 27 (ventilateur 2)
-Usage : python3 gpio_trigger.py [fan1|fan2] [on|off]
-"""
-import sys
-import RPi.GPIO as GPIO
-
-# Configuration des broches GPIO (numérotation BCM)
-PINS = {
-    "fan1": 17,
-    "fan2": 27,
-}
-
-def control(device, state):
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setwarnings(False)
-    pin = PINS.get(device)
-    if pin is None:
-        print(f"Erreur : appareil '{device}' inconnu. Disponibles : {list(PINS.keys())}")
-        sys.exit(1)
-    GPIO.setup(pin, GPIO.OUT)
-    GPIO.output(pin, GPIO.HIGH if state == "on" else GPIO.LOW)
-    print(f"{device} -> {state.upper()} (GPIO {pin})")
-    GPIO.cleanup()
-
-if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Usage : python3 gpio_trigger.py [fan1|fan2] [on|off]")
-        sys.exit(1)
-    control(sys.argv[1], sys.argv[2])
-PYEOF
-
-chmod +x "$PROJECT_DIR/scripts/gpio_trigger.py"
-ok "Script GPIO ventilateurs créé."
+ok "OctoPrint installé et configuré."
 
 # =============================================================
 # RÉSUMÉ FINAL
@@ -284,26 +280,28 @@ echo "  Mot de passe : $WIFI_PASSWORD"
 echo "  IP Raspberry : $STATIC_IP"
 echo ""
 echo "  Interface web  : http://$STATIC_IP"
-echo "  OctoPrint      : http://$STATIC_IP:$OCTOPRINT_PORT"
+echo "  API Flask      : http://$STATIC_IP/api/"
+echo "  OctoPrint      : http://$STATIC_IP/octoprint/"
 echo ""
-echo "  Prochaines étapes :"
-echo "  1. Redémarrer le Raspberry : sudo reboot"
-echo "  2. Se connecter au WiFi REPLICATOR2"
-echo "  3. Ouvrir http://$STATIC_IP dans un navigateur"
-echo "  4. Ouvrir OctoPrint sur http://$STATIC_IP:$OCTOPRINT_PORT"
-echo "     → Récupérer la clé API dans Paramètres > API"
-echo "     → Coller la clé dans app/index.html (CONFIG.API_KEY)"
-echo "  5. Connecter la CR10S en USB au Raspberry"
-echo "  6. Tester le contrôle des ventilateurs :"
-echo "     python3 $PROJECT_DIR/scripts/gpio_trigger.py fan1 on"
+echo "  Prochaines étapes après redémarrage :"
+echo "  1. Connecter la CR10S en USB"
+echo "  2. Ouvrir OctoPrint : http://$STATIC_IP/octoprint/"
+echo "     → Paramètres > API > copier la clé"
+echo "     → Coller dans api/server.py (variable OCTOPRINT_KEY)"
+echo "     → Ou via variable d'environnement :"
+echo "       sudo systemctl edit replicator-api"
+echo "       Ajouter : Environment=OCTOPRINT_KEY=VOTRE_CLE"
+echo "  3. Tester l'interface : http://$STATIC_IP"
+echo "  4. Tester un ventilateur :"
+echo "     curl -X POST http://$STATIC_IP/api/fan/1/on"
 echo ""
-echo "  En cas de problème :"
-echo "  - Logs Nginx    : sudo journalctl -u nginx -f"
-echo "  - Logs OctoPrint: sudo journalctl -u octoprint -f"
-echo "  - Logs hotspot  : sudo journalctl -u hostapd -f"
+echo "  Logs en temps réel :"
+echo "  - API Flask  : sudo journalctl -u replicator-api -f"
+echo "  - OctoPrint  : sudo journalctl -u octoprint -f"
+echo "  - Nginx      : sudo journalctl -u nginx -f"
+echo "  - Hotspot    : sudo journalctl -u hostapd -f"
 echo ""
-echo "  Redémarrer maintenant ? (recommandé)"
-read -p "  [o/n] : " REBOOT
+read -p "  Redémarrer maintenant ? [o/n] : " REBOOT
 if [[ "$REBOOT" =~ ^[Oo]$ ]]; then
   sudo reboot
 fi
