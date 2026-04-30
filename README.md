@@ -47,6 +47,102 @@ Un Raspberry Pi fait tourner tout le système, **sans internet**, en créant son
 
 ---
 
+---
+
+## Pourquoi GitHub et pas le NAS ?
+
+> **Pour Thierry** — avant de commencer, 5 minutes pour comprendre pourquoi on travaille comme ça.
+
+### Le problème avec le glisser-déposer
+
+Imaginons que Rémy t'envoie `index.html` sur le NAS aujourd'hui.
+Demain il corrige un bug et t'envoie une nouvelle version.
+Après-demain il ajoute une fonctionnalité, nouvelle version encore.
+
+Au bout d'une semaine tu te retrouves avec :
+```
+index.html
+index_final.html
+index_final_v2.html
+index_BONNE_VERSION.html
+index_BONNE_VERSION_corrigé.html
+```
+
+Tu ne sais plus laquelle utiliser. Tu ne sais pas ce qui a changé entre deux versions. Si quelque chose casse, tu ne peux pas revenir en arrière facilement.
+
+---
+
+### Ce que Git change
+
+Git c'est un **système qui garde l'historique complet de chaque modification**, avec la date, qui l'a faite, et pourquoi.
+
+Il n'y a **qu'un seul fichier** `index.html`. Toujours le bon. Toujours à jour.
+
+Quand Rémy modifie quelque chose, tu tapes une commande et tu as la dernière version en 5 secondes :
+
+```bash
+git pull
+```
+
+C'est tout. Pas de NAS, pas de fichiers qui traînent, pas de doute sur quelle version utiliser.
+
+---
+
+### Comparaison directe
+
+| NAS + glisser-déposer | GitHub + git pull |
+|---|---|
+| Rémy t'envoie un fichier | Tu récupères toi-même quand tu veux |
+| Tu ne sais pas ce qui a changé | Tu vois exactement chaque modification |
+| Plusieurs versions qui s'accumulent | Un seul fichier, toujours à jour |
+| Si ça casse, impossible de revenir en arrière | On revient à n'importe quelle version en une commande |
+| Rémy doit penser à t'envoyer | Tu fais `git pull`, c'est à jour |
+
+---
+
+### Ce que tu as besoin de savoir faire
+
+Une seule commande pour récupérer les mises à jour :
+
+```bash
+git pull
+```
+
+C'est littéralement tout ce que tu auras à faire au quotidien.
+
+---
+
+Prérequis — Installer Git sur Mac (Mac Studio M2)
+1. Installer Git
+Ouvre le Terminal (CMD + Espace → "Terminal") et tape :
+bashxcode-select --install
+Une fenêtre s'ouvre, clique Installer. Ça prend 2-3 minutes.
+Vérifie que c'est bien installé :
+bashgit --version
+# doit afficher : git version 2.x.x
+
+2. Se configurer une seule fois
+bashgit config --global user.name "Ton Prénom"
+git config --global user.email "ton@email.com"
+
+3. Récupérer le projet (une seule fois)
+bashcd ~/Desktop
+git clone https://github.com/remytesta/replicator2.git
+cd replicator2
+Le dossier replicator2/ apparaît sur le Bureau.
+
+4. Mettre à jour le projet (à chaque fois que je push)
+bashcd ~/Desktop/replicator2
+git pull
+C'est tout. Pas besoin de télécharger des fichiers ou de passer par le NAS.
+
+5. Les 3 commandes Git à connaître
+CommandeCe que ça faitgit pullRécupère les dernières modificationsgit statusVoir ce qui a changégit log --onelineVoir l'historique des modifications
+
+Florent  n'a pas besoin de pusher, seulement de pull pour rester à jour.
+
+```
+
 ## Architecture (comment tout se parle)
 
 ```
