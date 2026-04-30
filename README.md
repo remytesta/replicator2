@@ -11,26 +11,6 @@ Une imprimante 3D Creality CR10S transformée en œuvre d'art interactive.
 
 Les visiteurs pilotent ses mouvements depuis leur téléphone ou une tablette.
 
-Un Raspberry Pi fait tourner tout le système, **sans internet**, en créant son propre réseau WiFi dans la chapelle.
-
----
-
-## Ce que le public peut faire
-
-- Se connecter au WiFi **REPLICATOR2** avec son téléphone
-- Ouvrir `http://10.0.0.1` dans son navigateur (aucune appli à télécharger)
-- Lancer une chorégraphie de la machine
-- Activer / désactiver les ventilateurs
-
----
-
-## Ce que l'admin peut faire (en plus)
-
-- Contrôler les axes X / Y / Z manuellement
-- Envoyer du G-code directement
-- Régler les paramètres de l'installation
-- Programmer des chorégraphies artistiques
-
 ---
 
 ## Les composants physiques
@@ -114,7 +94,7 @@ C'est littéralement tout ce que tu auras à faire au quotidien.
 
 ---
 
-## Prérequis — Installer Git sur Mac (Mac Studio M2)
+## Prérequis — Installer Git sur Mac
 
 ### 1. Installer Git
 
@@ -176,7 +156,7 @@ C'est tout. Pas besoin de télécharger des fichiers ou de passer par le NAS.
 | `git log --oneline` | Voir l'historique des modifications |
 
 > Ton frère n'a pas besoin de pusher, seulement de `pull` pour rester à jour.
-```
+
 
 ## Architecture (comment tout se parle)
 
@@ -216,7 +196,7 @@ replicator2/
 └── README.md               ← ce fichier
 ```
 
-```
+
 
 ## Installation sur le Raspberry Pi
 
