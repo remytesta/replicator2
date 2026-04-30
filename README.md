@@ -68,18 +68,6 @@ C'est tout. Pas de NAS, pas de fichiers qui traînent, pas de doute sur quelle v
 
 ---
 
-### Comparaison directe
-
-| NAS + glisser-déposer | GitHub + git pull |
-|---|---|
-| Rémy t'envoie un fichier | Tu récupères toi-même quand tu veux |
-| Tu ne sais pas ce qui a changé | Tu vois exactement chaque modification |
-| Plusieurs versions qui s'accumulent | Un seul fichier, toujours à jour |
-| Si ça casse, impossible de revenir en arrière | On revient à n'importe quelle version en une commande |
-| Rémy doit penser à t'envoyer | Tu fais `git pull`, c'est à jour |
-
----
-
 ### Ce que tu as besoin de savoir faire
 
 Une seule commande pour récupérer les mises à jour :
