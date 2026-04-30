@@ -11,7 +11,7 @@ Une imprimante 3D Creality CR10S transformée en œuvre d'art interactive.
 
 Les visiteurs pilotent ses mouvements depuis leur téléphone ou une tablette.
 
-Un Raspberry Pi (un mini-ordinateur de la taille d'une carte de crédit) fait tourner tout le système, **sans internet**, en créant son propre réseau WiFi dans la chapelle.
+Un Raspberry Pi fait tourner tout le système, **sans internet**, en créant son propre réseau WiFi dans la chapelle.
 
 ---
 
