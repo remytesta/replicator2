@@ -112,35 +112,70 @@ C'est littéralement tout ce que tu auras à faire au quotidien.
 
 ---
 
-Prérequis — Installer Git sur Mac (Mac Studio M2)
-1. Installer Git
-Ouvre le Terminal (CMD + Espace → "Terminal") et tape :
-bashxcode-select --install
-Une fenêtre s'ouvre, clique Installer. Ça prend 2-3 minutes.
+---
+
+## Prérequis — Installer Git sur Mac (Mac Studio M2)
+
+### 1. Installer Git
+
+Ouvre le **Terminal** (CMD + Espace → "Terminal") et tape :
+
+```bash
+xcode-select --install
+```
+
+Une fenêtre s'ouvre, clique **Installer**. Ça prend 2-3 minutes.
+
 Vérifie que c'est bien installé :
-bashgit --version
+
+```bash
+git --version
 # doit afficher : git version 2.x.x
+```
 
-2. Se configurer une seule fois
-bashgit config --global user.name "Ton Prénom"
+---
+
+### 2. Se configurer une seule fois
+
+```bash
+git config --global user.name "Ton Prénom"
 git config --global user.email "ton@email.com"
+```
 
-3. Récupérer le projet (une seule fois)
-bashcd ~/Desktop
+---
+
+### 3. Récupérer le projet (une seule fois)
+
+```bash
+cd ~/Desktop
 git clone https://github.com/remytesta/replicator2.git
 cd replicator2
-Le dossier replicator2/ apparaît sur le Bureau.
+```
 
-4. Mettre à jour le projet (à chaque fois que je push)
-bashcd ~/Desktop/replicator2
+Le dossier `replicator2/` apparaît sur le Bureau.
+
+---
+
+### 4. Mettre à jour le projet (à chaque fois que je push)
+
+```bash
+cd ~/Desktop/replicator2
 git pull
+```
+
 C'est tout. Pas besoin de télécharger des fichiers ou de passer par le NAS.
 
-5. Les 3 commandes Git à connaître
-CommandeCe que ça faitgit pullRécupère les dernières modificationsgit statusVoir ce qui a changégit log --onelineVoir l'historique des modifications
+---
 
-Florent  n'a pas besoin de pusher, seulement de pull pour rester à jour.
+### 5. Les 3 commandes Git à connaître
 
+| Commande | Ce que ça fait |
+|---|---|
+| `git pull` | Récupère les dernières modifications |
+| `git status` | Voir ce qui a changé |
+| `git log --oneline` | Voir l'historique des modifications |
+
+> Ton frère n'a pas besoin de pusher, seulement de `pull` pour rester à jour.
 ```
 
 ## Architecture (comment tout se parle)
