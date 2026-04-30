@@ -1,176 +1,194 @@
 # REPLICATOR 2
 
-Installation interactive — Festival du Peu 2026  
+Installation interactive — Festival du Peu 2026
 Le Broc, Alpes-Maritimes (06) — 29 mai au 21 juin 2026
 
 ---
 
-## Concept
+## C'est quoi ce projet ?
 
-Une imprimante 3D Creality CR10S devient une œuvre interactive.
+Une imprimante 3D Creality CR10S transformée en œuvre d'art interactive.
 
-Les visiteurs pilotent ses mouvements depuis une tablette tactile ou leur téléphone.  
-La machine ne produit rien. Elle performe.
+Les visiteurs pilotent ses mouvements depuis leur téléphone ou une tablette.
+La machine ne fabrique rien. Elle **performe**.
 
----
-
-## Architecture
-
-Système autonome, sans connexion internet.
-
-```
-Raspberry Pi (autonome)
-├── OctoPrint (port 5000) → contrôle CR10S
-├── Nginx (port 80)       → interface web (PWA)
-├── App locale            → UI visiteurs/admin
-└── Hotspot WiFi          → accès visiteurs
-
-↓
-Tablette HDMI (mode kiosk)
-Téléphones visiteurs (WiFi local)
-```
+Un Raspberry Pi (un mini-ordinateur de la taille d'une carte de crédit) fait tourner tout le système, **sans internet**, en créant son propre réseau WiFi dans la chapelle.
 
 ---
 
-## Stack
+## Ce que le public peut faire
 
-| Composant | Technologie |
+- Se connecter au WiFi **REPLICATOR2** avec son téléphone
+- Ouvrir `http://10.0.0.1` dans son navigateur (aucune appli à télécharger)
+- Lancer une chorégraphie de la machine
+- Activer / désactiver les ventilateurs
+
+---
+
+## Ce que l'admin peut faire (en plus)
+
+- Contrôler les axes X / Y / Z manuellement
+- Envoyer du G-code directement
+- Régler les paramètres de l'installation
+- Programmer des chorégraphies artistiques
+
+---
+
+## Les composants physiques
+
+| Élément | Rôle |
 |---|---|
-| Cerveau | Raspberry Pi 3B+ |
-| Contrôle imprimante | OctoPrint (OctoPi) |
-| Imprimante | Creality CR10S |
-| Interface | PWA HTML / JS |
-| Serveur local | Nginx |
-| Réseau | Hotspot WiFi Raspberry Pi |
-| Coordination | GitHub + Discord |
+| Raspberry Pi 3B+ | Le cerveau : gère tout |
+| Creality CR10S | L'imprimante 3D transformée en performeuse |
+| 4 moteurs | Déplacent les axes de la machine |
+| Plateau chauffant | Chauffé jusqu'à température artistique |
+| Tête chauffante | L'extrudeur de la CR10S, très haute température |
+| 2 ventilateurs | Contrôlables depuis l'appli (ON/OFF) |
+| Carte SD (32 Go min) | Contient tout le système du Raspberry |
 
 ---
 
-## Structure
+## Architecture (comment tout se parle)
+
+```
+[ Raspberry Pi ]
+      |
+      ├── OctoPrint (port 5000)  → parle à la CR10S via câble USB
+      ├── Nginx    (port 80)     → sert l'interface web aux visiteurs
+      ├── GPIO                   → contrôle les ventilateurs et relais
+      └── Hotspot WiFi           → crée le réseau REPLICATOR2
+             |
+             ├── Tablette (mode plein écran, fixée sur le meuble)
+             └── Téléphones des visiteurs
+```
+
+> **En clair :** Le Raspberry fait office de serveur, de routeur WiFi, et de cerveau de l'installation, tout en même temps. Pas besoin d'internet.
+
+---
+
+## Structure des fichiers du projet
 
 ```
 replicator2/
 ├── app/
-│   └── index.html
+│   └── index.html          ← l'interface web (ce que le visiteur voit)
 ├── gcode/
-│   ├── choreo_1.gcode
-│   ├── choreo_2.gcode
-│   ├── choreo_3.gcode
-│   └── choreo_4.gcode
+│   ├── choreo_1.gcode      ← chorégraphie 1
+│   ├── choreo_2.gcode      ← chorégraphie 2
+│   ├── choreo_3.gcode      ← chorégraphie 3
+│   └── choreo_4.gcode      ← chorégraphie 4
 ├── scripts/
-│   └── gpio_trigger.py
+│   └── gpio_trigger.py     ← contrôle les ventilateurs via les broches GPIO
 ├── docs/
 │   └── cahier-des-charges.docx
+├── install.sh              ← script d'installation automatique (voir ci-dessous)
 ├── .gitignore
-└── README.md
+└── README.md               ← ce fichier
 ```
 
 ---
 
-## Configuration
+## Installation sur le Raspberry Pi
 
-Modifier dans `app/index.html` :
+### Pré-requis avant de commencer
+
+- Un Raspberry Pi 3B+ avec Raspberry Pi OS Lite flashé sur une carte SD
+- SSH activé (option dans Raspberry Pi Imager)
+- Le Raspberry connecté au WiFi ou en Ethernet
+- Un ordinateur pour se connecter en SSH
+
+### Connexion au Raspberry (depuis ton ordi)
+
+```bash
+ssh pi@raspberrypi.local
+```
+
+> Le mot de passe par défaut est `raspberry`. **Change-le dès la première connexion.**
+
+```bash
+passwd
+```
+
+### Installation automatique (une seule commande)
+
+```bash
+git clone https://github.com/TON_COMPTE/replicator2.git && cd replicator2 && bash install.sh
+```
+
+**C'est tout.** Le script `install.sh` s'occupe du reste :
+- Met à jour le système
+- Installe Nginx, OctoPrint, les dépendances Python
+- Configure le hotspot WiFi REPLICATOR2
+- Configure Nginx pour servir l'interface
+- Active tout au démarrage
+
+---
+
+## Configuration à personnaliser
+
+Dans `app/index.html`, modifier ce bloc :
 
 ```javascript
 const CONFIG = {
-  OCTOPRINT_URL:  "http://10.0.0.1:5000",
-  API_KEY:        "VOTRE_CLE_API",
-  ADMIN_PASSWORD: "mot-de-passe",
-  DEFAULT_FEED:   1500,
-  DEFAULT_STEP:   10,
+  OCTOPRINT_URL:  "http://10.0.0.1:5000",   // adresse OctoPrint (ne pas changer)
+  API_KEY:        "VOTRE_CLE_API",           // clé générée dans OctoPrint
+  ADMIN_PASSWORD: "mot-de-passe",            // mot de passe admin de l'interface
+  DEFAULT_FEED:   1500,                      // vitesse de déplacement par défaut
+  DEFAULT_STEP:   10,                        // pas de déplacement en mm
 }
 ```
 
----
-
-## Déploiement (Raspberry Pi)
-
-### Copier les fichiers
-
-```bash
-mkdir -p /home/pi/replicator2
-cp -r app/* /home/pi/replicator2/
-```
-
-### Installer Nginx
-
-```bash
-sudo apt install nginx -y
-```
-
-### Configurer Nginx
-
-```bash
-sudo nano /etc/nginx/sites-available/default
-```
-
-```nginx
-server {
-    listen 80;
-    root /home/pi/replicator2;
-    index index.html;
-
-    location / {
-        try_files $uri $uri/ =404;
-    }
-}
-```
-
-```bash
-sudo systemctl restart nginx
-```
+> La clé API OctoPrint se génère dans : **OctoPrint > Paramètres > API > Clé globale**
 
 ---
 
-## Mode Kiosk
+## Mode Kiosk (tablette plein écran)
+
+Pour la tablette fixée sur le meuble :
 
 ```bash
-chromium-browser --kiosk http://localhost
+chromium-browser --kiosk --noerrdialogs --disable-infobars http://localhost
 ```
 
----
-
-## Réseau (Mode Expo)
-
-Le Raspberry Pi agit comme point d'accès WiFi.
-
-SSID : REPLICATOR2  
-Accès visiteurs : http://10.0.0.1  
-
-Aucune connexion internet requise.
+Ajouter cette ligne dans `/etc/xdg/lxsession/LXDE-pi/autostart` pour que ça se lance automatiquement au démarrage.
 
 ---
 
-## Accès
+## Réseau en mode exposition
 
-| Surface | URL | Profil |
+Le Raspberry crée son propre WiFi. Aucun internet nécessaire.
+
+| Paramètre | Valeur |
+|---|---|
+| Nom du réseau (SSID) | `REPLICATOR2` |
+| Mot de passe | *(à définir dans install.sh)* |
+| Adresse IP du Raspberry | `10.0.0.1` |
+| Interface visiteur | `http://10.0.0.1` |
+| Interface admin | `http://10.0.0.1` (avec mot de passe) |
+| OctoPrint | `http://10.0.0.1:5000` |
+
+---
+
+## Accès résumé
+
+| Qui | Depuis | URL |
 |---|---|---|
-| Tablette (kiosk) | http://localhost | Visiteur |
-| Téléphone visiteur | http://10.0.0.1 | Visiteur |
-| Admin (local) | http://10.0.0.1 | Admin |
+| Visiteur (téléphone) | WiFi REPLICATOR2 | http://10.0.0.1 |
+| Tablette (kiosk) | En local | http://localhost |
+| Admin | WiFi REPLICATOR2 | http://10.0.0.1 (mdp requis) |
+| OctoPrint (technique) | WiFi REPLICATOR2 | http://10.0.0.1:5000 |
 
 ---
 
-## Fonctionnalités
-
-### Visiteur
-- Lancer une chorégraphie
-- Contrôle simplifié
-
-### Admin
-- Contrôle axes X/Y/Z
-- Envoi G-code
-- Paramétrage
-
----
-
-## Statut
+## Statut du projet
 
 - [x] Concept validé
 - [x] Prototype app PWA
-- [ ] Installation OctoPrint
-- [ ] Connexion CR10S
-- [ ] Setup hotspot WiFi
+- [x] Script d'installation (install.sh)
+- [ ] Installation OctoPrint + clé API
+- [ ] Connexion CR10S testée
+- [ ] Setup hotspot WiFi validé en atelier
+- [ ] Contrôle ventilateurs via GPIO
 - [ ] Intégration meuble
 - [ ] Chorégraphies calibrées
 - [ ] Mode kiosk tablette
@@ -179,11 +197,32 @@ Aucune connexion internet requise.
 
 ---
 
-## Équipe
+## Equipe
 
-- Artiste : Nice, France  
-- Technique : Da Nang, Vietnam (remote)
+- Artiste / direction artistique : Nice, France
+- Technique / développement : Da Nang, Vietnam (remote)
+- Coordination : GitHub + Discord
 
 ---
 
-Replicator 2 — une machine qui ne fabrique rien, mais qui performe.
+## Lexique
+
+| Mot | Définition simple |
+|---|---|
+| **Raspberry Pi** | Mini-ordinateur (taille d'une carte de crédit) qui fait tourner tout le système |
+| **OctoPrint** | Logiciel qui pilote l'imprimante 3D à distance, via une interface web |
+| **G-code** | Langage de commande des imprimantes 3D (ex: "avance de 10mm sur l'axe X") |
+| **Nginx** | Logiciel qui sert les pages web aux téléphones des visiteurs |
+| **PWA** | Application web qui s'ouvre dans un navigateur comme une vraie appli, sans installation |
+| **GPIO** | Les petites broches de connexion du Raspberry Pi où on branche ventilateurs et relais |
+| **Hotspot WiFi** | Le Raspberry crée lui-même un réseau WiFi, comme une box internet portable |
+| **SSH** | Façon de se connecter à distance à un ordinateur en ligne de commande |
+| **git clone** | Télécharger tout le projet depuis GitHub en une commande |
+| **bash install.sh** | Exécuter le script d'installation automatique |
+| **IP statique** | Adresse fixe du Raspberry sur le réseau (10.0.0.1), elle ne change jamais |
+| **Mode kiosk** | Navigateur plein écran sans barre d'adresse ni bouton retour, pour la tablette expo |
+| **Flasher** | Écrire le système d'exploitation du Raspberry sur une carte SD |
+
+---
+
+*Replicator 2 — une machine qui ne fabrique rien, mais qui performe.*
