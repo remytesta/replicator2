@@ -10,7 +10,6 @@ Le Broc, Alpes-Maritimes (06) — 29 mai au 21 juin 2026
 Une imprimante 3D Creality CR10S transformée en œuvre d'art interactive.
 
 Les visiteurs pilotent ses mouvements depuis leur téléphone ou une tablette.
-La machine ne fabrique rien. Elle **performe**.
 
 Un Raspberry Pi (un mini-ordinateur de la taille d'une carte de crédit) fait tourner tout le système, **sans internet**, en créant son propre réseau WiFi dans la chapelle.
 
@@ -222,7 +221,3 @@ Le Raspberry crée son propre WiFi. Aucun internet nécessaire.
 | **IP statique** | Adresse fixe du Raspberry sur le réseau (10.0.0.1), elle ne change jamais |
 | **Mode kiosk** | Navigateur plein écran sans barre d'adresse ni bouton retour, pour la tablette expo |
 | **Flasher** | Écrire le système d'exploitation du Raspberry sur une carte SD |
-
----
-
-*Replicator 2 — une machine qui ne fabrique rien, mais qui performe.*
