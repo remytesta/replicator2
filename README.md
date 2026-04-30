@@ -216,9 +216,10 @@ replicator2/
 └── README.md               ← ce fichier
 ```
 
----
+```
 
 ## Installation sur le Raspberry Pi
+
 
 ### Pré-requis avant de commencer
 
