@@ -9,6 +9,8 @@ Le but est que l'installation puisse fonctionner en local, sans internet, avec u
 
 ![Plan Replicator 2](assets/replicator-2-plan-a-b.jpg)
 
+![Schema technique Replicator 2](assets/replicator-2-asset.jpg)
+
 ---
 
 ## Ce qu'on fait demain
