@@ -7,6 +7,8 @@ Projet : transformer une imprimante 3D Creality CR-10S en machine interactive pi
 
 Le but est que l'installation puisse fonctionner en local, sans internet, avec une interface web simple affichee sur tablette, ecran HDMI ou telephone.
 
+![Visuel Replicator 2](assets/replicator2-asset.svg)
+
 ---
 
 ## Ce qu'on fait demain
