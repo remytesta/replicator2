@@ -1,0 +1,22 @@
+{
+  "name": "REPLICATOR 2",
+  "short_name": "REPLICATOR 2",
+  "description": "Installation interactive Replicator 2",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0c0c12",
+  "theme_color": "#0c0c12",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -59,6 +59,8 @@ Le pilotage se fera a distance pendant la preparation : les personnes sur place 
 
 ## Phases de travail
 
+Brief operationnel pour demain : [`docs/brief-atelier-demain.md`](docs/brief-atelier-demain.md)
+
 ### Phase 1 - Atelier, tablette en HDMI
 
 Objectif immediat : faire tourner la PWA sur une tablette ou un ecran connecte en HDMI au Raspberry Pi.
