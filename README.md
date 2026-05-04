@@ -1,118 +1,32 @@
 # REPLICATOR 2
 
-Installation interactive — Festival du Peu 2026
-Le Broc, Alpes-Maritimes (06) — 29 mai au 21 juin 2026
+Installation interactive autour d'une imprimante 3D Creality CR-10S pilotee par un Raspberry Pi.
+
+Ce depot sert de base commune pour preparer, installer et maintenir le projet a distance.
 
 ---
 
-## C'est quoi ce projet ?
+## Installer Git sur le Mac de l'atelier
 
-Une imprimante 3D Creality CR10S transformée en œuvre d'art interactive.
-
-Les visiteurs pilotent ses mouvements depuis leur téléphone ou une tablette.
-
----
-
-## Les composants physiques
-
-| Élément | Rôle |
-|---|---|
-| Raspberry Pi 3B+ | Le cerveau : gère tout |
-| Creality CR10S | L'imprimante 3D transformée en performeuse |
-| 4 moteurs | Déplacent les axes de la machine |
-| Plateau chauffant | Chauffé jusqu'à température artistique |
-| Tête chauffante | L'extrudeur de la CR10S, très haute température |
-| 2 ventilateurs | Contrôlables depuis l'appli (ON/OFF) |
-| Carte SD (32 Go min) | Contient tout le système du Raspberry |
-
----
-
----
-
-## Pourquoi GitHub et pas le NAS ?
-
-> **Pour Thierry** — avant de commencer, 5 minutes pour comprendre pourquoi on travaille comme ça.
-
-### Le problème avec le glisser-déposer
-
-Imaginons que Rémy t'envoie `index.html` sur le NAS aujourd'hui.
-Demain il corrige un bug et t'envoie une nouvelle version.
-Après-demain il ajoute une fonctionnalité, nouvelle version encore.
-
-Au bout d'une semaine tu te retrouves avec :
-```
-index.html
-index_final.html
-index_final_v2.html
-index_BONNE_VERSION.html
-index_BONNE_VERSION_corrigé.html
-```
-
-Tu ne sais plus laquelle utiliser. Tu ne sais pas ce qui a changé entre deux versions. Si quelque chose casse, tu ne peux pas revenir en arrière facilement.
-
----
-
-### Ce que Git change
-
-Git c'est un **système qui garde l'historique complet de chaque modification**, avec la date, qui l'a faite, et pourquoi.
-
-Il n'y a **qu'un seul fichier** `index.html`. Toujours le bon. Toujours à jour.
-
-Quand Rémy modifie quelque chose, tu tapes une commande et tu as la dernière version en 5 secondes :
-
-```bash
-git pull
-```
-
-C'est tout. Pas de NAS, pas de fichiers qui traînent, pas de doute sur quelle version utiliser.
-
----
-
-### Ce que tu as besoin de savoir faire
-
-Une seule commande pour récupérer les mises à jour :
-
-```bash
-git pull
-```
-
-C'est littéralement tout ce que tu auras à faire au quotidien.
-
----
-
----
-
-## Prérequis — Installer Git sur Mac
-
-### 1. Installer Git
-
-Ouvre le **Terminal** (CMD + Espace → "Terminal") et tape :
+Sur le Mac utilise a l'atelier, ouvrir le Terminal puis installer Git si besoin :
 
 ```bash
 xcode-select --install
 ```
 
-Une fenêtre s'ouvre, clique **Installer**. Ça prend 2-3 minutes.
-
-Vérifie que c'est bien installé :
+Verifier ensuite que Git repond :
 
 ```bash
 git --version
-# doit afficher : git version 2.x.x
 ```
 
----
-
-### 2. Se configurer une seule fois
+Si Homebrew est deja installe sur le Mac, cette commande fonctionne aussi :
 
 ```bash
-git config --global user.name "Ton Prénom"
-git config --global user.email "ton@email.com"
+brew install git
 ```
 
----
-
-### 3. Récupérer le projet (une seule fois)
+Cloner ensuite le projet :
 
 ```bash
 cd ~/Desktop
@@ -120,204 +34,198 @@ git clone https://github.com/remytesta/replicator2.git
 cd replicator2
 ```
 
-Le dossier `replicator2/` apparaît sur le Bureau.
-
----
-
-### 4. Mettre à jour le projet (à chaque fois que je push)
+Pour recuperer les dernieres modifications plus tard :
 
 ```bash
-cd ~/Desktop/replicator2
 git pull
 ```
 
-C'est tout. Pas besoin de télécharger des fichiers ou de passer par le NAS.
+---
+
+## Objectif du projet
+
+Transformer une Creality CR-10S en installation interactive.
+
+Le Raspberry Pi sert de cerveau local :
+
+- il heberge la PWA affichee sur tablette ou telephone ;
+- il parle a OctoPrint pour commander l'imprimante ;
+- il peut controler des sorties GPIO, par exemple ventilateurs ou relais ;
+- il pourra, dans une phase suivante, creer son propre reseau WiFi local.
+
+Le pilotage se fera a distance pendant la preparation : les personnes sur place assemblent, branchent et testent le materiel ; le developpement et les corrections sont pousses via GitHub.
 
 ---
 
-### 5. Les 3 commandes Git à connaître
+## Phases de travail
 
-| Commande | Ce que ça fait |
-|---|---|
-| `git pull` | Récupère les dernières modifications |
-| `git status` | Voir ce qui a changé |
-| `git log --oneline` | Voir l'historique des modifications |
+### Phase 1 - Atelier, tablette en HDMI
 
-> Ton frère n'a pas besoin de pusher, seulement de `pull` pour rester à jour.
+Objectif immediat : faire tourner la PWA sur une tablette ou un ecran connecte en HDMI au Raspberry Pi.
 
+Dans cette phase, on ne cherche pas encore a creer un hotspot WiFi. Le Raspberry peut etre connecte au reseau de l'atelier pour permettre le SSH et les mises a jour.
 
-## Architecture (comment tout se parle)
+Ce qu'il faut valider :
 
-```
-[ Raspberry Pi ]
-      |
-      ├── OctoPrint (port 5000)  → parle à la CR10S via câble USB
-      ├── Nginx    (port 80)     → sert l'interface web aux visiteurs
-      ├── GPIO                   → contrôle les ventilateurs et relais
-      └── Hotspot WiFi           → crée le réseau REPLICATOR2
-             |
-             ├── Tablette (mode plein écran, fixée sur le meuble)
-             └── Téléphones des visiteurs
-```
+- Raspberry Pi installe et demarrable ;
+- SSH active dans Raspberry Pi Imager ;
+- acces SSH depuis le Mac de l'atelier ;
+- OctoPrint installe et accessible localement ;
+- PWA servie en local par Nginx ;
+- tablette ou ecran HDMI en mode kiosk ;
+- premiers tests de communication avec la CR-10S.
 
-> **En clair :** Le Raspberry fait office de serveur, de routeur WiFi, et de cerveau de l'installation, tout en même temps. Pas besoin d'internet.
-
----
-
-## Structure des fichiers du projet
-
-```
-replicator2/
-├── app/
-│   └── index.html          ← l'interface web (ce que le visiteur voit)
-├── gcode/
-│   ├── choreo_1.gcode      ← chorégraphie 1
-│   ├── choreo_2.gcode      ← chorégraphie 2
-│   ├── choreo_3.gcode      ← chorégraphie 3
-│   └── choreo_4.gcode      ← chorégraphie 4
-├── scripts/
-│   └── gpio_trigger.py     ← contrôle les ventilateurs via les broches GPIO
-├── docs/
-│   └── cahier-des-charges.docx
-├── install.sh              ← script d'installation automatique (voir ci-dessous)
-├── .gitignore
-└── README.md               ← ce fichier
-```
-
-
-
-## Installation sur le Raspberry Pi
-
-
-### Pré-requis avant de commencer
-
-- Un Raspberry Pi 3B+ avec Raspberry Pi OS Lite flashé sur une carte SD
-- SSH activé (option dans Raspberry Pi Imager)
-- Le Raspberry connecté au WiFi ou en Ethernet
-- Un ordinateur pour se connecter en SSH
-
-### Connexion au Raspberry (depuis ton ordi)
+Commande SSH typique :
 
 ```bash
 ssh pi@raspberrypi.local
 ```
 
-> Le mot de passe par défaut est `raspberry`. **Change-le dès la première connexion.**
+Si `raspberrypi.local` ne repond pas, recuperer l'adresse IP du Raspberry dans l'interface de la box ou du routeur, puis utiliser :
 
 ```bash
-passwd
+ssh pi@ADRESSE_IP_DU_RASPBERRY
 ```
 
-### Installation automatique (une seule commande)
+### Phase 2 - Mode hotspot WiFi
 
-```bash
-git clone https://github.com/TON_COMPTE/replicator2.git && cd replicator2 && bash install.sh
+Objectif : rendre le Raspberry autonome en exposition.
+
+Le Raspberry devra creer son propre reseau WiFi local, par exemple :
+
+```text
+SSID : REPLICATOR2
+IP   : 10.0.0.1
+URL  : http://10.0.0.1
 ```
 
-**C'est tout.** Le script `install.sh` s'occupe du reste :
-- Met à jour le système
-- Installe Nginx, OctoPrint, les dépendances Python
-- Configure le hotspot WiFi REPLICATOR2
-- Configure Nginx pour servir l'interface
-- Active tout au démarrage
+Les visiteurs pourront se connecter au WiFi `REPLICATOR2`, ouvrir l'adresse locale dans leur navigateur et utiliser la PWA sans internet.
+
+Pour cette phase, le script d'installation devra probablement etre separe ou parameterise :
+
+- un mode atelier simple, sans hotspot ;
+- un mode exposition, avec hotspot, IP statique, DHCP et Nginx.
+
+### Phase 3 - Ecran integre de la CR-10S
+
+Objectif exploratoire : comprendre si l'ecran integre de la CR-10S peut etre personnalise, notamment pour changer le logo ou l'ecran de demarrage.
+
+Cette phase est a traiter comme de la recherche firmware, pas comme une modification rapide :
+
+- identifier exactement le modele de CR-10S et sa carte mere ;
+- identifier le type d'ecran ;
+- sauvegarder ou retrouver le firmware d'origine ;
+- verifier si l'imprimante utilise Marlin stock, un firmware Creality modifie, ou un autre systeme ;
+- tester uniquement si on a une procedure de retour arriere.
+
+Risque principal : un mauvais flash firmware peut rendre l'ecran ou la carte inutilisable jusqu'a reflash complet.
 
 ---
 
-## Configuration à personnaliser
+## Architecture cible
 
-Dans `app/index.html`, modifier ce bloc :
-
-```javascript
-const CONFIG = {
-  OCTOPRINT_URL:  "http://10.0.0.1:5000",   // adresse OctoPrint (ne pas changer)
-  API_KEY:        "VOTRE_CLE_API",           // clé générée dans OctoPrint
-  ADMIN_PASSWORD: "mot-de-passe",            // mot de passe admin de l'interface
-  DEFAULT_FEED:   1500,                      // vitesse de déplacement par défaut
-  DEFAULT_STEP:   10,                        // pas de déplacement en mm
-}
+```text
+[ Tablette / telephone ]
+          |
+          v
+[ PWA servie par Nginx ]
+          |
+          v
+[ API Flask locale ]
+          |
+          +--> [ OctoPrint ] --> [ CR-10S via USB ]
+          |
+          +--> [ GPIO Raspberry ] --> [ ventilateurs / relais ]
 ```
 
-> La clé API OctoPrint se génère dans : **OctoPrint > Paramètres > API > Clé globale**
+Principe important : la PWA ne doit pas parler directement a OctoPrint avec une cle API visible dans le navigateur. La PWA doit appeler l'API Flask locale, et l'API Flask garde la cle OctoPrint cote Raspberry.
 
 ---
 
-## Mode Kiosk (tablette plein écran)
+## Structure du depot
 
-Pour la tablette fixée sur le meuble :
+```text
+replicator2/
+|-- app/
+|   |-- index.html          # Interface PWA principale
+|   |-- manifest.json       # Configuration PWA
+|   `-- sw.js               # Service worker
+|-- api/
+|   |-- server.py           # API Flask locale
+|   |-- octoprint_client.py # Client OctoPrint
+|   `-- gpio_controller.py  # Controle GPIO
+|-- gcode/
+|   |-- choreo_1.gcode
+|   |-- choreo_2.gcode
+|   |-- choreo_3.gcode
+|   `-- choreo_4.gcode
+|-- scripts/
+|   `-- gpio_trigger.py
+|-- install.sh              # Installation Raspberry actuelle
+`-- README.md
+```
+
+---
+
+## Installation Raspberry actuelle
+
+Depuis le Raspberry Pi :
+
+```bash
+git clone https://github.com/remytesta/replicator2.git
+cd replicator2
+bash install.sh
+```
+
+Le script actuel installe :
+
+- Nginx ;
+- OctoPrint ;
+- l'API Flask ;
+- les dependances Python ;
+- une configuration hotspot WiFi ;
+- les services systemd.
+
+Attention : ce script doit etre revu avant installation en atelier, car on veut d'abord un mode simple HDMI + SSH avant de basculer en mode hotspot.
+
+---
+
+## Variables importantes
+
+L'API Flask lit ces variables d'environnement :
+
+```bash
+OCTOPRINT_URL=http://127.0.0.1:5000
+OCTOPRINT_KEY=VOTRE_CLE_OCTOPRINT
+GCODE_DIR=/home/pi/replicator2/gcode
+```
+
+La cle OctoPrint ne doit pas etre stockee dans le HTML public.
+
+---
+
+## Mode kiosk HDMI
+
+Pour lancer Chromium en plein ecran sur le Raspberry :
 
 ```bash
 chromium-browser --kiosk --noerrdialogs --disable-infobars http://localhost
 ```
 
-Ajouter cette ligne dans `/etc/xdg/lxsession/LXDE-pi/autostart` pour que ça se lance automatiquement au démarrage.
+Cette commande pourra ensuite etre ajoutee au demarrage automatique du Raspberry quand la phase 1 sera validee.
 
 ---
 
-## Réseau en mode exposition
+## Statut
 
-Le Raspberry crée son propre WiFi. Aucun internet nécessaire.
-
-| Paramètre | Valeur |
-|---|---|
-| Nom du réseau (SSID) | `REPLICATOR2` |
-| Mot de passe | *(à définir dans install.sh)* |
-| Adresse IP du Raspberry | `10.0.0.1` |
-| Interface visiteur | `http://10.0.0.1` |
-| Interface admin | `http://10.0.0.1` (avec mot de passe) |
-| OctoPrint | `http://10.0.0.1:5000` |
-
----
-
-## Accès résumé
-
-| Qui | Depuis | URL |
-|---|---|---|
-| Visiteur (téléphone) | WiFi REPLICATOR2 | http://10.0.0.1 |
-| Tablette (kiosk) | En local | http://localhost |
-| Admin | WiFi REPLICATOR2 | http://10.0.0.1 (mdp requis) |
-| OctoPrint (technique) | WiFi REPLICATOR2 | http://10.0.0.1:5000 |
-
----
-
-## Statut du projet
-
-- [x] Concept validé
-- [x] Prototype app PWA
-- [x] Script d'installation (install.sh)
-- [ ] Installation OctoPrint + clé API
-- [ ] Connexion CR10S testée
-- [ ] Setup hotspot WiFi validé en atelier
-- [ ] Contrôle ventilateurs via GPIO
-- [ ] Intégration meuble
-- [ ] Chorégraphies calibrées
-- [ ] Mode kiosk tablette
-- [ ] Tests visiteurs
-- [ ] Installation chapelle
-
----
-
-## Equipe
-
-- Artiste / direction artistique : Nice, France
-- Technique / développement : Da Nang, Vietnam (remote)
-- Coordination : GitHub + Discord
-
----
-
-## Lexique
-
-| Mot | Définition simple |
-|---|---|
-| **Raspberry Pi** | Mini-ordinateur (taille d'une carte de crédit) qui fait tourner tout le système |
-| **OctoPrint** | Logiciel qui pilote l'imprimante 3D à distance, via une interface web |
-| **G-code** | Langage de commande des imprimantes 3D (ex: "avance de 10mm sur l'axe X") |
-| **Nginx** | Logiciel qui sert les pages web aux téléphones des visiteurs |
-| **PWA** | Application web qui s'ouvre dans un navigateur comme une vraie appli, sans installation |
-| **GPIO** | Les petites broches de connexion du Raspberry Pi où on branche ventilateurs et relais |
-| **Hotspot WiFi** | Le Raspberry crée lui-même un réseau WiFi, comme une box internet portable |
-| **SSH** | Façon de se connecter à distance à un ordinateur en ligne de commande |
-| **git clone** | Télécharger tout le projet depuis GitHub en une commande |
-| **bash install.sh** | Exécuter le script d'installation automatique |
-| **IP statique** | Adresse fixe du Raspberry sur le réseau (10.0.0.1), elle ne change jamais |
-| **Mode kiosk** | Navigateur plein écran sans barre d'adresse ni bouton retour, pour la tablette expo |
-| **Flasher** | Écrire le système d'exploitation du Raspberry sur une carte SD |
+- [x] Prototype PWA
+- [x] API Flask de base
+- [x] G-code de test
+- [x] Revoir README pour installation atelier
+- [ ] Corriger API/PWA pour passer uniquement par Flask
+- [ ] Ajouter une route API pour le G-code manuel
+- [ ] Separer installation atelier et installation hotspot
+- [ ] Tester OctoPrint avec la CR-10S assemblee
+- [ ] Tester mode kiosk HDMI
+- [ ] Tester hotspot WiFi
+- [ ] Etudier personnalisation de l'ecran CR-10S
