@@ -219,6 +219,135 @@ On ne l'active pas en premier demain, parce que le hotspot change la configurati
 
 ---
 
+## Le script `install.sh`
+
+Le fichier `install.sh` est le script d'installation automatique du Raspberry.
+
+L'idee : au lieu de taper 50 commandes a la main, on lance un seul script, et il prepare le Raspberry.
+
+Commande prevue :
+
+```bash
+git clone https://github.com/remytesta/replicator2.git
+cd replicator2
+bash install.sh
+```
+
+Important : le script actuel installe aussi le mode hotspot WiFi. Pour demain, il faut etre prudent, parce qu'on veut d'abord tester le mode atelier avec SSH et ecran HDMI.
+
+### Ce que fait le script aujourd'hui
+
+1. Met a jour le Raspberry :
+
+```bash
+sudo apt update
+sudo apt upgrade
+```
+
+2. Installe les logiciels necessaires :
+
+- `nginx` : sert la PWA dans le navigateur ;
+- `git` : recupere le projet depuis GitHub ;
+- `python3-pip` et `python3-venv` : installent l'API Flask ;
+- `hostapd` : cree le WiFi `REPLICATOR2` ;
+- `dnsmasq` : donne des adresses IP aux telephones connectes au hotspot ;
+- `curl`, `wget` : outils de test et telechargement ;
+- `ufw` : pare-feu.
+
+3. Copie les fichiers du projet dans :
+
+```text
+/home/pi/replicator2
+```
+
+4. Cree un environnement Python pour l'API Flask :
+
+```text
+/home/pi/replicator2/venv
+```
+
+5. Installe les dependances Python :
+
+- Flask ;
+- Flask-CORS ;
+- requests ;
+- RPi.GPIO.
+
+6. Cree un service systemd `replicator-api`.
+
+Ce service lance automatiquement :
+
+```text
+/home/pi/replicator2/api/server.py
+```
+
+En clair : l'API Flask redemarre toute seule si le Raspberry redemarre.
+
+7. Configure Nginx.
+
+Nginx sert :
+
+- la PWA sur `http://localhost` ou `http://10.0.0.1` ;
+- l'API Flask via `/api/` ;
+- OctoPrint via `/octoprint/`.
+
+8. Configure une IP fixe :
+
+```text
+10.0.0.1
+```
+
+9. Configure le hotspot WiFi :
+
+```text
+SSID : REPLICATOR2
+Mot de passe : replicator2026
+```
+
+10. Installe OctoPrint dans :
+
+```text
+/home/pi/oprint
+```
+
+11. Cree un service systemd `octoprint`.
+
+OctoPrint pourra donc demarrer automatiquement avec le Raspberry.
+
+### Pourquoi il faut le revoir
+
+Le script actuel melange deux besoins :
+
+- mode atelier : Raspberry connecte au reseau existant, SSH facile, ecran HDMI ;
+- mode exposition : Raspberry autonome, hotspot WiFi, IP fixe.
+
+Pour demain, on veut surtout le mode atelier. Donc le script doit probablement etre separe en deux scripts ou recevoir une option :
+
+```bash
+bash install.sh atelier
+bash install.sh hotspot
+```
+
+Version ideale :
+
+```text
+install-atelier.sh
+  -> installe Nginx, OctoPrint, Flask, PWA, mode kiosk
+  -> ne touche pas au WiFi
+
+install-hotspot.sh
+  -> ajoute hostapd, dnsmasq, IP fixe, reseau REPLICATOR2
+  -> seulement quand le mode atelier est valide
+```
+
+### A ne pas oublier apres installation
+
+Apres installation, il faut encore generer la cle API OctoPrint dans OctoPrint, puis l'ajouter au service `replicator-api`.
+
+Le script ne peut pas deviner cette cle a l'avance.
+
+---
+
 ## Phase 3 - Modifier l'ecran integre de la CR-10S
 
 Objectif : changer le logo ou l'ecran de demarrage de l'imprimante.
