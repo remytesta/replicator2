@@ -19,7 +19,7 @@ Objectif realiste :
 3. Installer ou ouvrir OctoPrint.
 4. Brancher la CR-10S en USB.
 5. Verifier qu'OctoPrint voit bien l'imprimante.
-6. Afficher la PWA sur la tablette ou l'ecran branche en HDMI au Raspberry.
+6. Afficher la PWA (Progressive Web App, l'interface user) sur la tablette ou l'ecran branche en HDMI au Raspberry.
 7. Recuperer les infos de l'ecran integre de la CR-10S pour preparer la phase 3.
 
 La chaine a valider demain :
