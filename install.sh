@@ -27,7 +27,7 @@ WIFI_PASSWORD="replicator2026"
 STATIC_IP="10.0.0.1"
 DHCP_RANGE_START="10.0.0.10"
 DHCP_RANGE_END="10.0.0.50"
-PROJECT_DIR="/home/pi/replicator2"
+PROJECT_DIR="/home/flt/replicator2"
 OCTOPRINT_PORT="5000"
 API_PORT="8080"
 
@@ -127,7 +127,7 @@ Requires=octoprint.service
 
 [Service]
 Type=simple
-User=pi
+User=flt
 WorkingDirectory=$PROJECT_DIR/api
 Environment=OCTOPRINT_URL=http://127.0.0.1:$OCTOPRINT_PORT
 Environment=GCODE_DIR=$PROJECT_DIR/gcode
@@ -242,9 +242,9 @@ ok "Hotspot WiFi '$WIFI_SSID' configuré."
 # =============================================================
 info "Étape 9/9 — Installation d'OctoPrint..."
 
-python3 -m venv /home/pi/oprint
-/home/pi/oprint/bin/pip install --upgrade pip
-/home/pi/oprint/bin/pip install octoprint
+python3 -m venv /home/flt/oprint
+/home/flt/oprint/bin/pip install --upgrade pip
+/home/flt/oprint/bin/pip install octoprint
 
 sudo bash -c "cat > /etc/systemd/system/octoprint.service << EOF
 [Unit]
@@ -253,8 +253,8 @@ After=network.target
 
 [Service]
 Type=simple
-User=pi
-ExecStart=/home/pi/oprint/bin/octoprint serve --port $OCTOPRINT_PORT
+User=flt
+ExecStart=/home/flt/oprint/bin/octoprint serve --port $OCTOPRINT_PORT
 Restart=on-failure
 RestartSec=5
 
@@ -264,7 +264,7 @@ EOF"
 
 sudo systemctl daemon-reload
 sudo systemctl enable octoprint
-sudo usermod -aG dialout pi
+sudo usermod -aG dialout flt
 ok "OctoPrint installé et configuré."
 
 # =============================================================

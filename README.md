@@ -88,13 +88,13 @@ Dans Raspberry Pi Imager :
 Depuis le Mac :
 
 ```bash
-ssh pi@raspberrypi.local
+ssh flt@raspberrypi.local
 ```
 
 Si `raspberrypi.local` ne marche pas, trouver l'adresse IP du Raspberry dans la box ou le routeur, puis :
 
 ```bash
-ssh pi@ADRESSE_IP_DU_RASPBERRY
+ssh flt@ADRESSE_IP_DU_RASPBERRY
 ```
 
 ---
@@ -248,13 +248,13 @@ sudo apt upgrade
 3. Copie les fichiers du projet dans :
 
 ```text
-/home/pi/replicator2
+/home/flt/replicator2
 ```
 
 4. Cree un environnement Python pour l'API Flask :
 
 ```text
-/home/pi/replicator2/venv
+/home/flt/replicator2/venv
 ```
 
 5. Installe les dependances Python :
@@ -269,7 +269,7 @@ sudo apt upgrade
 Ce service lance automatiquement :
 
 ```text
-/home/pi/replicator2/api/server.py
+/home/flt/replicator2/api/server.py
 ```
 
 En clair : l'API Flask redemarre toute seule si le Raspberry redemarre.
@@ -298,7 +298,7 @@ Mot de passe : replicator2026
 10. Installe OctoPrint dans :
 
 ```text
-/home/pi/oprint
+/home/flt/oprint
 ```
 
 11. Cree un service systemd `octoprint`.
