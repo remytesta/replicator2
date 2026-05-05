@@ -9,9 +9,8 @@ Le but est que l'installation puisse fonctionner en local, sans internet, avec u
 
 ---
 
-## Ce qu'on fait demain
+## Ce qu'on fait today
 
-Demain, on ne cherche pas a tout finaliser.
 
 Objectif realiste :
 
@@ -102,12 +101,6 @@ ssh pi@ADRESSE_IP_DU_RASPBERRY
 
 ## Cle API OctoPrint
 
-On ne peut pas generer la vraie cle OctoPrint depuis GitHub.
-
-La cle est creee par OctoPrint directement sur le Raspberry, une fois OctoPrint installe et configure. Il ne faut pas la mettre dans le depot GitHub.
-
-Une cle API, c'est comme une cle de maison : si elle est publique, quelqu'un peut commander l'imprimante.
-
 ### Generer la cle demain
 
 1. Ouvrir OctoPrint dans le navigateur.
@@ -191,7 +184,7 @@ Lancer Chromium en plein ecran :
 chromium-browser --kiosk --noerrdialogs --disable-infobars http://localhost
 ```
 
-Pour demain, on peut lancer cette commande a la main. L'autodemarrage viendra apres.
+On doit lancer cette commande a la main. L'autodemarrage viendra apres.
 
 ---
 
@@ -217,7 +210,7 @@ On ne l'active pas en premier demain, parce que le hotspot change la configurati
 
 ---
 
-## Le script `install.sh`
+## Le script `install.sh` 🛑STAND BY🛑
 
 Le fichier `install.sh` est le script d'installation automatique du Raspberry.
 
@@ -348,9 +341,9 @@ Le script ne peut pas deviner cette cle a l'avance.
 
 ## Phase 3 - Modifier l'ecran integre de la CR-10S
 
-Objectif : changer le logo ou l'ecran de demarrage de l'imprimante.
+Objectif : changer le logo ou l'ecran de demarrage de l'imprimante et l'interface
 
-Important : ce n'est probablement pas un ecran plasma. Sur une CR-10S classique, l'ecran est generalement un petit LCD monochrome type 128x64 avec bouton rotatif. Il est pilote par le firmware de l'imprimante, souvent base sur Marlin.
+L'ecran est generalement un petit LCD monochrome type 128x64 avec bouton rotatif. Il est pilote par le firmware de l'imprimante, souvent base sur Marlin.
 
 Donc on ne change pas juste une image comme sur un telephone. On modifie le firmware, puis on reflashe l'imprimante.
 
