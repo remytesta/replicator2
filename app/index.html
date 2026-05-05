@@ -702,7 +702,12 @@ async function api(endpoint, method = "POST", body = null) {
     const opts = { method, headers: { "Content-Type": "application/json" } };
     if (body) opts.body = JSON.stringify(body);
     const r = await fetch(CONFIG.API_URL + endpoint, opts);
-    return await r.json();
+    const data = await r.json();
+    if (!r.ok || data.status === "error") {
+      toast(data.message || "Erreur API");
+      return null;
+    }
+    return data;
   } catch (e) {
     toast("Erreur réseau");
     return null;
@@ -830,7 +835,10 @@ function buildChoreoGrid() {
 }
 
 function runChoreo(id) {
-  if (state.playing) stopAll();
+  if (state.playing) {
+    toast("Choreographie deja en cours");
+    return;
+  }
   api(`/api/choreo/run/${id}`).then(r => {
     if (!r) return;
     state.playing = id;

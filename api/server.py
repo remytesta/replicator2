@@ -10,6 +10,7 @@ from flask_cors import CORS
 from octoprint_client import OctoPrintClient
 from gpio_controller import GPIOController
 import os
+import threading
 
 app = Flask(__name__)
 CORS(app)
@@ -21,6 +22,7 @@ GCODE_DIR     = os.environ.get("GCODE_DIR", "/home/flt/replicator2/gcode")
 
 octo = OctoPrintClient(OCTOPRINT_URL, OCTOPRINT_KEY)
 gpio = GPIOController()
+choreo_lock = threading.Lock()
 
 # =============================================================
 # Utilitaire
@@ -32,6 +34,10 @@ def ok(msg="OK"):
 def err(msg, code=500):
     return jsonify({"status": "error", "message": msg}), code
 
+def printer_is_busy(printer):
+    state = str(printer.get("state", "")).lower()
+    return state not in ("operational", "ready", "idle", "")
+
 # =============================================================
 # Statut général
 # =============================================================
@@ -42,6 +48,7 @@ def status():
     return jsonify({
         "status": "ok",
         "octoprint": printer,
+        "busy": printer_is_busy(printer),
         "fans": gpio.get_states(),
     })
 
@@ -132,8 +139,20 @@ def choreo_run(choreo_id):
     gcode_path = os.path.join(GCODE_DIR, f"choreo_{choreo_id}.gcode")
     if not os.path.exists(gcode_path):
         return err(f"Fichier choreo_{choreo_id}.gcode introuvable")
-    result = octo.upload_and_print(gcode_path)
-    return ok(f"Chorégraphie {choreo_id} lancée") if result else err("Erreur OctoPrint")
+    if not choreo_lock.acquire(blocking=False):
+        return err("Une chorégraphie est déjà en cours de lancement", 409)
+
+    try:
+        printer = octo.get_printer_state()
+        if not printer.get("connected"):
+            return err("OctoPrint non connecté", 503)
+        if printer_is_busy(printer):
+            return err(f"Imprimante occupée : {printer.get('state', 'inconnu')}", 409)
+
+        result = octo.upload_and_print(gcode_path)
+        return ok(f"Chorégraphie {choreo_id} lancée") if result else err("Erreur OctoPrint")
+    finally:
+        choreo_lock.release()
 
 @app.route("/api/choreo/stop", methods=["POST"])
 def choreo_stop():
