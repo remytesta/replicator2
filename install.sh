@@ -67,6 +67,10 @@ sudo apt install -y \
   wget \
   ufw
 
+if ! command -v chromium-browser >/dev/null 2>&1 && ! command -v chromium >/dev/null 2>&1; then
+  sudo apt install -y chromium-browser || sudo apt install -y chromium
+fi
+
 ok "Logiciels installés."
 
 # =============================================================

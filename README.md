@@ -181,10 +181,23 @@ Ce qu'il faut valider :
 Lancer Chromium en plein ecran :
 
 ```bash
-chromium-browser --kiosk --noerrdialogs --disable-infobars http://localhost
+chromium --kiosk --noerrdialogs --disable-infobars http://localhost/
 ```
 
-On doit lancer cette commande a la main. L'autodemarrage viendra apres.
+Si `chromium` n'existe pas, essayer l'ancien nom du binaire :
+
+```bash
+chromium-browser --kiosk --noerrdialogs --disable-infobars http://localhost/
+```
+
+Si aucun des deux n'existe :
+
+```bash
+sudo apt update
+sudo apt install -y chromium-browser || sudo apt install -y chromium
+```
+
+On doit lancer cette commande a la main depuis la session graphique du Raspberry, sans `sudo`. L'autodemarrage viendra apres.
 
 ---
 
