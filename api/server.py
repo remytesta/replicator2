@@ -17,7 +17,7 @@ CORS(app)
 # --- Config ---
 OCTOPRINT_URL = os.environ.get("OCTOPRINT_URL", "http://127.0.0.1:5000")
 OCTOPRINT_KEY = os.environ.get("OCTOPRINT_KEY", "VOTRE_CLE_API")
-GCODE_DIR     = os.environ.get("GCODE_DIR", "/home/pi/replicator2/gcode")
+GCODE_DIR     = os.environ.get("GCODE_DIR", "/home/flt/replicator2/gcode")
 
 octo = OctoPrintClient(OCTOPRINT_URL, OCTOPRINT_KEY)
 gpio = GPIOController()
@@ -109,6 +109,19 @@ def fan(fan_id, action):
         return err("Action invalide. Valeurs : on, off")
     result = gpio.set_fan(int(fan_id), action == "on")
     return ok(f"Ventilateur {fan_id} -> {action.upper()}") if result else err("Erreur GPIO")
+
+# =============================================================
+# G-code manuel
+# =============================================================
+
+@app.route("/api/gcode", methods=["POST"])
+def gcode():
+    data = request.get_json(silent=True) or {}
+    command = str(data.get("command", "")).strip()
+    if not command:
+        return err("Commande G-code vide", 400)
+    result = octo.send_gcode(command)
+    return ok(f"G-code envoye: {command}") if result else err("Erreur OctoPrint")
 
 # =============================================================
 # Chorégraphies — envoi de fichier G-code complet
