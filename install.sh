@@ -164,6 +164,23 @@ server {
         try_files \\\$uri \\\$uri/ /index.html;
     }
 
+    # Captive portal probes (iOS, Android, Chrome, Windows)
+    location = /generate_204 {
+        return 302 /;
+    }
+
+    location = /hotspot-detect.html {
+        return 302 /;
+    }
+
+    location = /canonical.html {
+        return 302 /;
+    }
+
+    location = /ncsi.txt {
+        return 302 /;
+    }
+
     # Proxy API Flask
     location /api/ {
         proxy_pass http://127.0.0.1:$API_PORT/api/;
@@ -224,9 +241,7 @@ wpa_pairwise=TKIP
 rsn_pairwise=CCMP
 EOF"
 
-# Eviter la ligne en double
-grep -q 'DAEMON_CONF' /etc/default/hostapd || \
-  sudo bash -c 'echo "DAEMON_CONF=\"/etc/hostapd/hostapd.conf\"" >> /etc/default/hostapd'
+sudo sed -i 's|^#\?DAEMON_CONF=.*|DAEMON_CONF="/etc/hostapd/hostapd.conf"|' /etc/default/hostapd
 
 sudo mv /etc/dnsmasq.conf /etc/dnsmasq.conf.backup 2>/dev/null || true
 sudo bash -c "cat > /etc/dnsmasq.conf << EOF
@@ -234,6 +249,7 @@ interface=wlan0
 dhcp-range=$DHCP_RANGE_START,$DHCP_RANGE_END,255.255.255.0,24h
 domain=local
 address=/replicator.local/$STATIC_IP
+address=/#/$STATIC_IP
 EOF"
 
 sudo systemctl unmask hostapd

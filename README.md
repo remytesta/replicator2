@@ -214,6 +214,25 @@ Adresse    : http://10.0.0.1
 
 Les visiteurs se connecteront au WiFi `REPLICATOR2`, puis ouvriront `http://10.0.0.1` dans leur navigateur.
 
+Pour aider les telephones a ouvrir automatiquement la PWA comme un portail captif :
+
+```ini
+interface=wlan0
+dhcp-range=10.0.0.10,10.0.0.50,255.255.255.0,24h
+domain=local
+address=/replicator.local/10.0.0.1
+address=/#/10.0.0.1
+```
+
+`address=/#/10.0.0.1` force les noms de domaine demandes par les telephones a revenir vers le Raspberry. Nginx doit aussi rediriger les URLs de detection captive vers `/` :
+
+```text
+/generate_204
+/hotspot-detect.html
+/canonical.html
+/ncsi.txt
+```
+
 Pour cette phase, il faudra separer ou parameteriser l'installation :
 
 - mode atelier : reseau normal, SSH facile, pas de hotspot ;
