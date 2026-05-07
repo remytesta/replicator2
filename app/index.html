@@ -1261,6 +1261,11 @@ function isDevMode() {
   return params.get("dev") === "1" || ["127.0.0.1", "localhost"].includes(window.location.hostname);
 }
 
+function isStaticDevServer() {
+  return ["127.0.0.1", "localhost"].includes(window.location.hostname)
+    && ["8000", "8001"].includes(window.location.port);
+}
+
 function initDevPanel() {
   const panel = document.getElementById("devPanel");
   if (!isDevMode()) return;
@@ -1414,6 +1419,13 @@ function wait(ms) {
 }
 
 async function pollStatus() {
+  if (isStaticDevServer()) {
+    const dot = document.getElementById("statusDot");
+    const label = document.getElementById("statusLabel");
+    dot.className = "dot error";
+    label.textContent = "Demo";
+    return;
+  }
   const data = await api("/api/status", "GET", null, true);
   const dot = document.getElementById("statusDot");
   const label = document.getElementById("statusLabel");
