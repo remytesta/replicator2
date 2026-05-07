@@ -1,9 +1,8 @@
-const CACHE = 'replicator2-v4'
+const CACHE = 'replicator2-v5'
 const FILES = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/vendor/OrbitControls.js',
   '/vendor/three.core.min.js',
   '/vendor/three.module.min.js'
 ]

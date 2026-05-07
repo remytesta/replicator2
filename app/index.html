@@ -3,27 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<meta name="theme-color" content="#ede9df">
+<meta name="theme-color" content="#f4f4f4">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>REPLICATOR 2</title>
 <link rel="manifest" href="manifest.json">
 <style>
   :root {
-    --paper: oklch(96% 0.008 250);
-    --paper-2: oklch(91% 0.011 250);
-    --ink: oklch(19% 0.018 254);
-    --muted: oklch(50% 0.025 254);
-    --line: oklch(80% 0.016 250);
-    --clay: oklch(59% 0.16 29);
-    --leaf: oklch(56% 0.12 155);
-    --blue: oklch(55% 0.13 246);
-    --violet: oklch(57% 0.14 305);
-    --danger: oklch(50% 0.16 31);
-    --surface: oklch(99% 0.004 250);
-    --surface-soft: oklch(94% 0.009 250);
-    --focus: oklch(59% 0.13 246);
-    --shadow: 0 18px 42px oklch(28% 0.025 254 / 0.13);
+    --paper: oklch(96% 0 0);
+    --paper-2: oklch(90% 0 0);
+    --ink: oklch(16% 0 0);
+    --muted: oklch(48% 0 0);
+    --line: oklch(78% 0 0);
+    --clay: oklch(22% 0 0);
+    --leaf: oklch(34% 0 0);
+    --blue: oklch(46% 0 0);
+    --violet: oklch(58% 0 0);
+    --danger: oklch(32% 0 0);
+    --surface: oklch(99% 0 0);
+    --surface-soft: oklch(93% 0 0);
+    --focus: oklch(16% 0 0);
+    --shadow: 0 18px 42px oklch(28% 0 0 / 0.13);
     --mono: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
     --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
@@ -34,10 +34,10 @@
     min-height: 100%;
     margin: 0;
     background:
-      radial-gradient(circle at 18% 18%, oklch(86% 0.05 246 / 0.32), transparent 28%),
-      radial-gradient(circle at 88% 82%, oklch(86% 0.05 29 / 0.2), transparent 26%),
-      linear-gradient(90deg, oklch(35% 0.012 250 / 0.045) 1px, transparent 1px),
-      linear-gradient(0deg, oklch(35% 0.012 250 / 0.045) 1px, transparent 1px),
+      radial-gradient(circle at 18% 18%, oklch(82% 0 0 / 0.32), transparent 28%),
+      radial-gradient(circle at 88% 82%, oklch(86% 0 0 / 0.2), transparent 26%),
+      linear-gradient(90deg, oklch(35% 0 0 / 0.045) 1px, transparent 1px),
+      linear-gradient(0deg, oklch(35% 0 0 / 0.045) 1px, transparent 1px),
       var(--paper);
     background-size: 24px 24px;
     color: var(--ink);
@@ -63,7 +63,7 @@
     justify-content: space-between;
     gap: 14px;
     border-bottom: 1px solid var(--line);
-    background: oklch(98% 0.006 250 / 0.9);
+    background: oklch(98% 0 0 / 0.9);
     backdrop-filter: blur(10px);
   }
 
@@ -103,17 +103,17 @@
     height: 9px;
     border-radius: 50%;
     background: var(--line);
-    box-shadow: 0 0 0 4px oklch(73% 0.026 78 / 0.25);
+    box-shadow: 0 0 0 4px oklch(73% 0 0 / 0.25);
   }
 
   .dot.connected {
-    background: var(--leaf);
-    box-shadow: 0 0 0 4px oklch(47% 0.09 146 / 0.18);
+    background: oklch(24% 0 0);
+    box-shadow: 0 0 0 4px oklch(24% 0 0 / 0.14);
   }
 
   .dot.error {
     background: var(--danger);
-    box-shadow: 0 0 0 4px oklch(50% 0.16 31 / 0.16);
+    box-shadow: 0 0 0 4px oklch(32% 0 0 / 0.14);
   }
 
   .stage {
@@ -134,7 +134,7 @@
     position: relative;
     border: 1px solid var(--line);
     background:
-      linear-gradient(180deg, oklch(99% 0.005 250 / 0.95), oklch(93% 0.012 250 / 0.92)),
+      linear-gradient(180deg, oklch(99% 0 0 / 0.95), oklch(93% 0 0 / 0.92)),
       var(--surface);
     box-shadow: var(--shadow);
     overflow: hidden;
@@ -184,7 +184,7 @@
   .hour-fill {
     height: 100%;
     width: 0;
-    background: linear-gradient(90deg, var(--clay), var(--leaf), var(--blue), var(--violet));
+    background: linear-gradient(90deg, oklch(12% 0 0), oklch(36% 0 0), oklch(58% 0 0), oklch(24% 0 0));
     transition: width 600ms cubic-bezier(.22, 1, .36, 1);
   }
 
@@ -198,13 +198,13 @@
   .structure {
     position: absolute;
     inset: 42px 56px 34px;
-    border: 2px solid oklch(55% 0.03 254 / 0.22);
+    border: 2px solid oklch(55% 0 0 / 0.22);
     border-radius: 10px;
     background:
-      linear-gradient(90deg, transparent calc(50% - 1px), oklch(55% 0.03 254 / 0.18) calc(50% - 1px), oklch(55% 0.03 254 / 0.18) calc(50% + 1px), transparent calc(50% + 1px)),
-      linear-gradient(0deg, transparent calc(50% - 1px), oklch(55% 0.03 254 / 0.18) calc(50% - 1px), oklch(55% 0.03 254 / 0.18) calc(50% + 1px), transparent calc(50% + 1px)),
+      linear-gradient(90deg, transparent calc(50% - 1px), oklch(55% 0 0 / 0.18) calc(50% - 1px), oklch(55% 0 0 / 0.18) calc(50% + 1px), transparent calc(50% + 1px)),
+      linear-gradient(0deg, transparent calc(50% - 1px), oklch(55% 0 0 / 0.18) calc(50% - 1px), oklch(55% 0 0 / 0.18) calc(50% + 1px), transparent calc(50% + 1px)),
       var(--surface);
-    box-shadow: inset 0 0 0 1px oklch(100% 0 0 / 0.6), inset 0 0 42px oklch(75% 0.035 246 / 0.12);
+    box-shadow: inset 0 0 0 1px oklch(100% 0 0 / 0.6), inset 0 0 42px oklch(75% 0 0 / 0.12);
   }
 
   .height-note {
@@ -244,12 +244,12 @@
     border: 1px solid var(--line);
     background:
       radial-gradient(circle at 50% 50%, var(--surface) 0 20%, transparent 21%),
-      conic-gradient(from var(--rot), var(--color) 0 18%, oklch(90% 0.012 250) 18% 55%, color-mix(in oklch, var(--color), var(--ink) 18%) 55% 72%, oklch(94% 0.008 250) 72% 100%);
+      conic-gradient(from var(--rot), var(--color) 0 18%, oklch(90% 0 0) 18% 55%, color-mix(in oklch, var(--color), var(--ink) 18%) 55% 72%, oklch(94% 0 0) 72% 100%);
     box-shadow:
       inset 0 0 0 8px oklch(100% 0 0 / 0.72),
-      inset 0 0 0 20px oklch(55% 0.02 250 / 0.08),
+      inset 0 0 0 20px oklch(55% 0 0 / 0.08),
       0 0 0 8px color-mix(in oklch, var(--color), transparent 76%),
-      0 14px 28px oklch(30% 0.025 254 / 0.13);
+      0 14px 28px oklch(30% 0 0 / 0.13);
     transition: transform 900ms cubic-bezier(.16, 1, .3, 1), filter 240ms ease;
     transform: rotate(var(--rot));
   }
@@ -311,11 +311,11 @@
     inset: 30px 34px 32px;
     border-radius: 48% 52% 42% 58% / 28% 31% 69% 72%;
     background:
-      radial-gradient(ellipse at 50% 16%, oklch(99% 0.006 250) 0 10%, oklch(78% 0.018 250) 11% 18%, transparent 19%),
-      linear-gradient(90deg, oklch(40% 0.025 254 / 0.16), transparent 26% 74%, oklch(100% 0 0 / 0.55)),
-      linear-gradient(145deg, oklch(92% 0.012 250), oklch(69% 0.018 250));
+      radial-gradient(ellipse at 50% 16%, oklch(99% 0 0) 0 10%, oklch(78% 0 0) 11% 18%, transparent 19%),
+      linear-gradient(90deg, oklch(40% 0 0 / 0.16), transparent 26% 74%, oklch(100% 0 0 / 0.55)),
+      linear-gradient(145deg, oklch(92% 0 0), oklch(69% 0 0));
     border: 2px solid oklch(100% 0 0 / 0.72);
-    box-shadow: inset 0 -16px 24px oklch(35% 0.025 254 / 0.16), 0 0 0 5px color-mix(in oklch, var(--color), transparent 72%);
+    box-shadow: inset 0 -16px 24px oklch(35% 0 0 / 0.16), 0 0 0 5px color-mix(in oklch, var(--color), transparent 72%);
     transform: rotate(0deg);
     z-index: 1;
   }
@@ -329,7 +329,7 @@
     height: 11%;
     border-radius: 50%;
     transform: translateX(-50%);
-    background: oklch(34% 0.025 254 / 0.18);
+    background: oklch(34% 0 0 / 0.18);
   }
 
   .plateau strong {
@@ -340,7 +340,7 @@
     transform: translate(-50%, -50%);
     font-family: var(--mono);
     font-size: 20px;
-    color: oklch(22% 0.022 254);
+    color: oklch(22% 0 0);
   }
 
   .plateau small {
@@ -362,9 +362,9 @@
 
   .plateau.revealed .vase {
     background:
-      radial-gradient(ellipse at 50% 16%, oklch(97% 0.013 83) 0 10%, oklch(74% 0.025 82) 11% 18%, transparent 19%),
-      linear-gradient(90deg, oklch(27% 0.02 78 / 0.3), transparent 18% 82%, oklch(96% 0.012 82 / 0.42)),
-      linear-gradient(145deg, color-mix(in oklch, var(--color), oklch(88% 0.021 82) 58%), oklch(48% 0.04 78));
+      radial-gradient(ellipse at 50% 16%, oklch(97% 0 0) 0 10%, oklch(74% 0 0) 11% 18%, transparent 19%),
+      linear-gradient(90deg, oklch(27% 0 0 / 0.3), transparent 18% 82%, oklch(96% 0 0 / 0.42)),
+      linear-gradient(145deg, color-mix(in oklch, var(--color), oklch(88% 0 0) 58%), oklch(48% 0 0));
   }
 
   .plateau.revealed small {
@@ -443,7 +443,7 @@
     margin-top: 12px;
   }
 
-  .speed button, .move-grid button, .final-btn, .stop-btn {
+  .speed button, .move-grid button, .viewer-actions button, .final-btn, .stop-btn {
     border: 1px solid var(--line);
     background: var(--surface);
     color: var(--ink);
@@ -466,12 +466,12 @@
 
   .move-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
     gap: 8px;
   }
 
   .move-grid button {
-    min-height: 76px;
+    min-height: 58px;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -486,7 +486,7 @@
   }
 
   .move-grid strong {
-    font-size: 25px;
+    font-size: 20px;
     line-height: 1;
   }
 
@@ -507,13 +507,44 @@
     border-radius: 8px;
   }
 
+  .viewer-actions {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    padding: 12px 14px;
+    border-top: 1px solid oklch(95% 0 0 / 0.22);
+  }
+
+  .viewer-actions button {
+    min-height: 54px;
+    background: oklch(96% 0 0);
+    color: oklch(12% 0 0);
+    border-color: oklch(75% 0 0);
+  }
+
+  .viewer-actions strong {
+    display: block;
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  .viewer-actions span {
+    display: block;
+    margin-top: 5px;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: oklch(38% 0 0);
+  }
+
   .final-btn span {
     display: block;
     font-family: var(--mono);
     font-size: 10px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: oklch(88% 0.018 82 / 0.72);
+    color: oklch(88% 0 0 / 0.72);
     margin-bottom: 4px;
   }
 
@@ -528,7 +559,7 @@
     gap: 10px;
     align-items: center;
     border-top: 1px solid var(--line);
-    background: oklch(94% 0.014 82 / 0.92);
+    background: oklch(94% 0 0 / 0.92);
   }
 
   .timeline {
@@ -539,7 +570,7 @@
 
   .act {
     height: 8px;
-    background: oklch(82% 0.018 82);
+    background: oklch(82% 0 0);
     overflow: hidden;
   }
 
@@ -564,9 +595,9 @@
   }
 
   .stop-btn {
-    border-color: oklch(65% 0.08 31);
+    border-color: oklch(65% 0 0);
     color: var(--danger);
-    background: oklch(95% 0.022 42);
+    background: oklch(95% 0 0);
   }
 
   .toast {
@@ -603,9 +634,9 @@
     place-items: center;
     padding: 22px;
     background:
-      radial-gradient(circle at 50% 42%, oklch(85% 0.05 246 / 0.24) 0 20%, transparent 21%),
-      linear-gradient(90deg, oklch(35% 0.012 250 / 0.05) 1px, transparent 1px),
-      linear-gradient(0deg, oklch(35% 0.012 250 / 0.05) 1px, transparent 1px),
+      radial-gradient(circle at 50% 42%, oklch(85% 0 0 / 0.24) 0 20%, transparent 21%),
+      linear-gradient(90deg, oklch(35% 0 0 / 0.05) 1px, transparent 1px),
+      linear-gradient(0deg, oklch(35% 0 0 / 0.05) 1px, transparent 1px),
       var(--paper);
     background-size: auto, 22px 22px, 22px 22px, auto;
   }
@@ -650,10 +681,10 @@
     width: 32%;
     aspect-ratio: 1;
     border-radius: 48% 52% 42% 58% / 28% 31% 69% 72%;
-    border: 1px solid oklch(52% 0.024 78 / 0.42);
+    border: 1px solid oklch(52% 0 0 / 0.42);
     background:
-      radial-gradient(ellipse at 50% 16%, oklch(99% 0.006 250) 0 12%, transparent 13%),
-      linear-gradient(145deg, oklch(91% 0.012 250), oklch(68% 0.018 250));
+      radial-gradient(ellipse at 50% 16%, oklch(99% 0 0) 0 12%, transparent 13%),
+      linear-gradient(145deg, oklch(91% 0 0), oklch(68% 0 0));
     transition: transform 800ms cubic-bezier(.16, 1, .3, 1), background 220ms ease;
   }
 
@@ -662,10 +693,10 @@
   .phone-vases span:nth-child(3) { left: 17%; bottom: 15%; }
   .phone-vases span:nth-child(4) { right: 17%; bottom: 15%; }
 
-  .phone-app.revealed .phone-vases span:nth-child(1) { transform: rotate(180deg) scale(1.04); background-color: oklch(74% 0.08 41); }
-  .phone-app.revealed .phone-vases span:nth-child(2) { transform: rotate(-180deg) scale(1.04); background-color: oklch(72% 0.07 146); }
-  .phone-app.revealed .phone-vases span:nth-child(3) { transform: rotate(180deg) scale(1.04); background-color: oklch(70% 0.06 230); }
-  .phone-app.revealed .phone-vases span:nth-child(4) { transform: rotate(-180deg) scale(1.04); background-color: oklch(71% 0.07 304); }
+  .phone-app.revealed .phone-vases span:nth-child(1) { transform: rotate(180deg) scale(1.04); background-color: oklch(72% 0 0); }
+  .phone-app.revealed .phone-vases span:nth-child(2) { transform: rotate(-180deg) scale(1.04); background-color: oklch(64% 0 0); }
+  .phone-app.revealed .phone-vases span:nth-child(3) { transform: rotate(180deg) scale(1.04); background-color: oklch(56% 0 0); }
+  .phone-app.revealed .phone-vases span:nth-child(4) { transform: rotate(-180deg) scale(1.04); background-color: oklch(48% 0 0); }
 
   .secret-button {
     width: 100%;
@@ -677,7 +708,7 @@
     font-weight: 800;
     letter-spacing: 0;
     cursor: pointer;
-    box-shadow: 0 16px 36px oklch(28% 0.025 80 / 0.2);
+    box-shadow: 0 16px 36px oklch(28% 0 0 / 0.2);
     border-radius: 10px;
   }
 
@@ -696,9 +727,9 @@
     z-index: 9;
     width: min(360px, calc(100vw - 24px));
     padding: 10px;
-    border: 1px solid oklch(52% 0.024 78 / 0.55);
-    background: oklch(94% 0.014 82 / 0.94);
-    box-shadow: 0 14px 34px oklch(28% 0.025 80 / 0.18);
+    border: 1px solid oklch(52% 0 0 / 0.55);
+    background: oklch(94% 0 0 / 0.94);
+    box-shadow: 0 14px 34px oklch(28% 0 0 / 0.18);
   }
 
   .dev-panel[hidden] {
@@ -735,7 +766,7 @@
   .dev-reset {
     min-height: 34px;
     border: 1px solid var(--line);
-    background: oklch(96% 0.011 82);
+    background: oklch(96% 0 0);
     color: var(--ink);
     cursor: pointer;
     font-family: var(--mono);
@@ -766,8 +797,8 @@
     place-items: center;
     padding: 18px;
     background:
-      radial-gradient(circle at 50% 18%, oklch(78% 0.07 246 / 0.22), transparent 30%),
-      oklch(12% 0.018 254 / 0.7);
+      radial-gradient(circle at 50% 18%, oklch(78% 0 0 / 0.22), transparent 30%),
+      oklch(12% 0 0 / 0.7);
     backdrop-filter: blur(10px);
   }
 
@@ -778,14 +809,14 @@
   .viewer-shell {
     width: min(92vw, 620px);
     height: min(86vh, 560px);
-    border: 1px solid oklch(95% 0.028 225 / 0.42);
+    border: 1px solid oklch(95% 0 0 / 0.42);
     background:
-      linear-gradient(180deg, oklch(99% 0.008 250 / 0.12), transparent 38%),
-      oklch(18% 0.022 254 / 0.94);
+      linear-gradient(180deg, oklch(99% 0 0 / 0.12), transparent 38%),
+      oklch(18% 0 0 / 0.94);
     color: var(--paper);
     display: grid;
-    grid-template-rows: auto 1fr auto;
-    box-shadow: 0 24px 68px oklch(6% 0.012 245 / 0.45);
+    grid-template-rows: auto 1fr auto auto;
+    box-shadow: 0 24px 68px oklch(6% 0 0 / 0.45);
     border-radius: 10px;
   }
 
@@ -800,7 +831,7 @@
     font-size: 11px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: oklch(88% 0.028 225 / 0.72);
+    color: oklch(88% 0 0 / 0.72);
   }
 
   .viewer-head strong {
@@ -811,7 +842,7 @@
   .viewer-close {
     width: 38px;
     height: 34px;
-    border: 1px solid oklch(95% 0.028 225 / 0.34);
+    border: 1px solid oklch(95% 0 0 / 0.34);
     background: transparent;
     color: var(--paper);
     cursor: pointer;
@@ -822,7 +853,7 @@
   .viewer-canvas-wrap {
     position: relative;
     min-height: 0;
-    border-block: 1px solid oklch(95% 0.028 225 / 0.22);
+    border-block: 1px solid oklch(95% 0 0 / 0.22);
     overflow: hidden;
   }
 
@@ -830,17 +861,13 @@
     width: 100%;
     height: 100%;
     display: block;
-    cursor: grab;
-    touch-action: none;
+    cursor: default;
+    touch-action: auto;
     user-select: none;
   }
 
-  #vaseCanvas:active {
-    cursor: grabbing;
-  }
-
   .viewer-canvas-wrap {
-    touch-action: none;
+    touch-action: auto;
     user-select: none;
   }
 
@@ -848,7 +875,7 @@
     content: "";
     position: absolute;
     inset: 18px;
-    border: 1px solid oklch(95% 0.028 225 / 0.16);
+    border: 1px solid oklch(95% 0 0 / 0.16);
     pointer-events: none;
   }
 
@@ -858,7 +885,7 @@
     display: grid;
     place-items: center;
     padding: 24px;
-    color: oklch(88% 0.08 45);
+    color: oklch(88% 0 0);
     font-family: var(--mono);
     font-size: 12px;
     text-align: center;
@@ -1070,10 +1097,7 @@
       </section>
 
       <section class="move-grid" aria-label="Commandes plateau">
-        <button onclick="rotateSelected(-90)" id="backBtn"><strong>-90</strong><span>tour gauche</span></button>
-        <button onclick="rotateSelected(90)" id="forwardBtn"><strong>+90</strong><span>tour droite</span></button>
-        <button onclick="rotateSelected(180)" id="halfBtn"><strong>180</strong><span>retourner</span></button>
-        <button onclick="pulseSelected()" id="pulseBtn"><strong>on</strong><span>tester moteur</span></button>
+        <button onclick="openVaseViewer(state.selected)" id="viewModelBtn"><strong>Voir le modele 3D</strong><span>ouvrir les commandes du plateau</span></button>
       </section>
 
       <button class="final-btn" id="finalBtn" onclick="runFinale()" disabled>
@@ -1148,8 +1172,14 @@
       <div class="viewer-error" id="viewerError" hidden></div>
     </div>
     <div class="viewer-foot">
-      <span>glisser pour tourner</span>
-      <span>dos / profil / face</span>
+      <span>Les boutons font tourner le plateau</span>
+      <span>modele fixe</span>
+    </div>
+    <div class="viewer-actions" aria-label="Commandes plateau depuis la vue 3D">
+      <button onclick="rotateViewerPlateau(-90)"><strong>-90</strong><span>gauche</span></button>
+      <button onclick="rotateViewerPlateau(90)"><strong>+90</strong><span>droite</span></button>
+      <button onclick="rotateViewerPlateau(180)"><strong>180</strong><span>retourner</span></button>
+      <button onclick="pulseSelected()"><strong>on</strong><span>test</span></button>
     </div>
   </div>
 </section>
@@ -1325,11 +1355,6 @@ function selectPlateau(id) {
 }
 
 function handlePlateauClick(event, id) {
-  if (event.target.closest(".vase")) {
-    event.stopPropagation();
-    openVaseViewer(id);
-    return;
-  }
   selectPlateau(id);
 }
 
@@ -1346,12 +1371,12 @@ function updateControls() {
   document.getElementById("selectedName").textContent = CONFIG.PLATEAUS[selected].name;
   document.getElementById("selectedState").textContent = available ? "disponible" : "verrouille";
   document.getElementById("finalBtn").disabled = state.unlocked.length < 4;
-  ["backBtn", "forwardBtn", "halfBtn", "pulseBtn"].forEach(id => {
+  ["viewModelBtn"].forEach(id => {
     document.getElementById(id).disabled = !available;
   });
   [1, 2, 3, 4].forEach(id => {
     document.getElementById(`plateau-${id}`).style.outline =
-      id === selected ? "3px solid oklch(18% 0.018 80 / 0.42)" : "0";
+      id === selected ? "3px solid oklch(18% 0 0 / 0.42)" : "0";
   });
 }
 
@@ -1387,6 +1412,14 @@ async function runFinale() {
       speed: "fast"
     });
     await wait(160);
+  }
+}
+
+async function rotateViewerPlateau(angle) {
+  await rotateSelected(angle);
+  if (viewer?.vase) {
+    viewer.vase.rotation.y += THREE.MathUtils.degToRad(angle);
+    renderViewer();
   }
 }
 
@@ -1456,13 +1489,8 @@ setInterval(pollStatus, CONFIG.STATUS_INTERVAL);
 </script>
 <script>
 let THREE;
-let OrbitControls;
-const threeReady = Promise.all([
-  import("./vendor/three.module.min.js"),
-  import("./vendor/OrbitControls.js"),
-]).then(([threeModule, controlsModule]) => {
+const threeReady = import("./vendor/three.module.min.js").then((threeModule) => {
   THREE = threeModule;
-  OrbitControls = controlsModule.OrbitControls;
   return threeModule;
 }).catch((error) => {
   window.__threeError = error.message;
@@ -1471,13 +1499,12 @@ const threeReady = Promise.all([
 
 let viewer;
 let viewerFrame = null;
-let manualDrag = { active: false, x: 0, y: 0 };
 
 const palettes = {
-  1: { body: 0xd9b28a, back: 0x9f4f31, glow: 0xf5d06f },
-  2: { body: 0xc9d7c4, back: 0x4f8b56, glow: 0xa7f0cf },
-  3: { body: 0xbfd7df, back: 0x4f8299, glow: 0xaee8ff },
-  4: { body: 0xd4c4dc, back: 0x7a5c99, glow: 0xe2c1ff },
+  1: { body: 0xd8d8d8, back: 0x202020, glow: 0xf2f2f2 },
+  2: { body: 0xc8c8c8, back: 0x303030, glow: 0xe2e2e2 },
+  3: { body: 0xb8b8b8, back: 0x404040, glow: 0xd2d2d2 },
+  4: { body: 0xa8a8a8, back: 0x505050, glow: 0xc2c2c2 },
 };
 
 async function ensureViewer() {
@@ -1494,48 +1521,15 @@ async function ensureViewer() {
 
   const group = new THREE.Group();
   scene.add(group);
-  scene.add(new THREE.HemisphereLight(0xf7fbff, 0x483f33, 2.25));
-  const key = new THREE.DirectionalLight(0xffefc2, 2.1);
+  scene.add(new THREE.HemisphereLight(0xf7f7f7, 0x3d3d3d, 2.25));
+  const key = new THREE.DirectionalLight(0xffffff, 2.1);
   key.position.set(3, 4, 4);
   scene.add(key);
-  const ice = new THREE.DirectionalLight(0xaee8ff, 1.25);
+  const ice = new THREE.DirectionalLight(0xd8d8d8, 1.25);
   ice.position.set(-4, 1, 3);
   scene.add(ice);
 
-  const controls = new OrbitControls(camera, canvas);
-  controls.enableDamping = true;
-  controls.dampingFactor = 0.08;
-  controls.enablePan = false;
-  controls.minDistance = 4.2;
-  controls.maxDistance = 9;
-  controls.target.set(0, 0, 0);
-  controls.addEventListener("change", renderViewer);
-
-  viewer = { canvas, renderer, scene, camera, controls, group, vase: null, halo: null };
-  const dragSurface = canvas.parentElement;
-
-  dragSurface.addEventListener("pointerdown", (event) => {
-    manualDrag = { active: true, x: event.clientX, y: event.clientY };
-    dragSurface.setPointerCapture(event.pointerId);
-  });
-
-  dragSurface.addEventListener("pointermove", (event) => {
-    if (!manualDrag.active || !viewer?.vase) return;
-    const dx = event.clientX - manualDrag.x;
-    const dy = event.clientY - manualDrag.y;
-    manualDrag = { active: true, x: event.clientX, y: event.clientY };
-    viewer.vase.rotation.y += dx * 0.015;
-    viewer.vase.rotation.x = Math.max(-0.9, Math.min(0.9, viewer.vase.rotation.x + dy * 0.01));
-    renderViewer();
-  });
-
-  dragSurface.addEventListener("pointerup", () => {
-    manualDrag.active = false;
-  });
-
-  dragSurface.addEventListener("pointercancel", () => {
-    manualDrag.active = false;
-  });
+  viewer = { canvas, renderer, scene, camera, group, vase: null, halo: null };
 
   window.addEventListener("resize", resizeViewer);
   return viewer;
@@ -1576,7 +1570,7 @@ function makeVase(id) {
 
   const mouth = new THREE.Mesh(
     new THREE.TorusGeometry(0.35, 0.055, 18, 64),
-    new THREE.MeshStandardMaterial({ color: 0xf4f0df, roughness: 0.35 })
+    new THREE.MeshStandardMaterial({ color: 0xf2f2f2, roughness: 0.35 })
   );
   mouth.position.y = 1.56;
   mouth.rotation.x = Math.PI / 2;
@@ -1591,7 +1585,7 @@ function makeVase(id) {
   group.add(halo);
 
   const fur = new THREE.Group();
-  const furMaterial = new THREE.MeshStandardMaterial({ color: 0xf3f4ed, roughness: 0.92 });
+  const furMaterial = new THREE.MeshStandardMaterial({ color: 0xf2f2f2, roughness: 0.92 });
   for (let i = 0; i < 36; i += 1) {
     const strand = new THREE.Mesh(new THREE.ConeGeometry(0.025, 0.34, 5), furMaterial);
     const angle = (i / 36) * Math.PI * 2;
@@ -1622,19 +1616,10 @@ function renderViewer() {
 }
 
 function startViewerLoop() {
-  if (viewerFrame) return;
-  const tick = () => {
-    viewerFrame = requestAnimationFrame(tick);
-    if (!viewer || document.getElementById("vaseViewer").hidden) return;
-    viewer.controls.update();
-    renderViewer();
-  };
-  tick();
+  renderViewer();
 }
 
 function stopViewerLoop() {
-  if (!viewerFrame) return;
-  cancelAnimationFrame(viewerFrame);
   viewerFrame = null;
 }
 
@@ -1648,8 +1633,6 @@ window.openVaseViewer = async function openVaseViewer(id) {
     v.vase = makeVase(id);
     v.group.add(v.vase);
     v.group.rotation.set(-0.08, Math.PI * 0.18, 0);
-    v.controls.reset();
-    v.controls.update();
     requestAnimationFrame(() => {
       resizeViewer();
       renderViewer();
