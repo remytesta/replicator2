@@ -1429,16 +1429,21 @@ setInterval(pollStatus, CONFIG.STATUS_INTERVAL);
 </script>
 <script>
 let THREE;
-const threeReady = import("./vendor/three.module.min.js").then((module) => {
-  THREE = module;
-  return module;
+let OrbitControls;
+const threeReady = Promise.all([
+  import("./vendor/three.module.min.js"),
+  import("./vendor/OrbitControls.js"),
+]).then(([threeModule, controlsModule]) => {
+  THREE = threeModule;
+  OrbitControls = controlsModule.OrbitControls;
+  return threeModule;
 }).catch((error) => {
   window.__threeError = error.message;
   throw error;
 });
 
 let viewer;
-let drag = { active: false, x: 0 };
+let viewerFrame = null;
 
 const palettes = {
   1: { body: 0xd9b28a, back: 0x9f4f31, glow: 0xf5d06f },
@@ -1469,24 +1474,16 @@ async function ensureViewer() {
   ice.position.set(-4, 1, 3);
   scene.add(ice);
 
-  viewer = { canvas, renderer, scene, camera, group, vase: null, halo: null };
+  const controls = new OrbitControls(camera, canvas);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  controls.enablePan = false;
+  controls.minDistance = 4.2;
+  controls.maxDistance = 9;
+  controls.target.set(0, 0, 0);
+  controls.addEventListener("change", renderViewer);
 
-  canvas.addEventListener("pointerdown", (event) => {
-    drag = { active: true, x: event.clientX };
-    canvas.setPointerCapture(event.pointerId);
-  });
-
-  canvas.addEventListener("pointermove", (event) => {
-    if (!drag.active) return;
-    const dx = event.clientX - drag.x;
-    drag.x = event.clientX;
-    group.rotation.y += dx * 0.015;
-    renderViewer();
-  });
-
-  canvas.addEventListener("pointerup", () => {
-    drag.active = false;
-  });
+  viewer = { canvas, renderer, scene, camera, controls, group, vase: null, halo: null };
 
   window.addEventListener("resize", resizeViewer);
   return viewer;
@@ -1572,6 +1569,23 @@ function renderViewer() {
   viewer.renderer.render(viewer.scene, viewer.camera);
 }
 
+function startViewerLoop() {
+  if (viewerFrame) return;
+  const tick = () => {
+    viewerFrame = requestAnimationFrame(tick);
+    if (!viewer || document.getElementById("vaseViewer").hidden) return;
+    viewer.controls.update();
+    renderViewer();
+  };
+  tick();
+}
+
+function stopViewerLoop() {
+  if (!viewerFrame) return;
+  cancelAnimationFrame(viewerFrame);
+  viewerFrame = null;
+}
+
 window.openVaseViewer = async function openVaseViewer(id) {
   document.getElementById("vaseViewer").hidden = false;
   document.getElementById("viewerTitle").textContent = `Vase ${id}`;
@@ -1582,9 +1596,12 @@ window.openVaseViewer = async function openVaseViewer(id) {
     v.vase = makeVase(id);
     v.group.add(v.vase);
     v.group.rotation.set(-0.08, Math.PI * 0.18, 0);
+    v.controls.reset();
+    v.controls.update();
     requestAnimationFrame(() => {
       resizeViewer();
       renderViewer();
+      startViewerLoop();
     });
   } catch (error) {
     const err = document.getElementById("viewerError");
@@ -1595,6 +1612,7 @@ window.openVaseViewer = async function openVaseViewer(id) {
 
 window.closeVaseViewer = function closeVaseViewer() {
   document.getElementById("vaseViewer").hidden = true;
+  stopViewerLoop();
 };
 
 const directVase = Number(new URLSearchParams(window.location.search).get("vase"));

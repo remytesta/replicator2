@@ -3,6 +3,7 @@ const FILES = [
   '/',
   '/index.html',
   '/manifest.json',
+  '/vendor/OrbitControls.js',
   '/vendor/three.core.min.js',
   '/vendor/three.module.min.js'
 ]
