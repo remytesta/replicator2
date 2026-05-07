@@ -1,8 +1,10 @@
-const CACHE = 'replicator2-v1'
+const CACHE = 'replicator2-v2'
 const FILES = [
   '/',
   '/index.html',
-  '/manifest.json'
+  '/manifest.json',
+  '/vendor/three.core.min.js',
+  '/vendor/three.module.min.js'
 ]
 
 self.addEventListener('install', e => {

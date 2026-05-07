@@ -128,7 +128,10 @@
   .map-panel {
     position: relative;
     border: 1px solid var(--line);
-    background: oklch(91% 0.017 84 / 0.82);
+    background:
+      radial-gradient(circle at 12% 18%, oklch(83% 0.08 215 / 0.35), transparent 23%),
+      radial-gradient(circle at 88% 76%, oklch(72% 0.12 45 / 0.3), transparent 25%),
+      oklch(91% 0.017 84 / 0.86);
     box-shadow: var(--shadow);
     overflow: hidden;
   }
@@ -191,10 +194,12 @@
   .structure {
     position: absolute;
     inset: 42px 56px 34px;
-    border: 2px solid oklch(46% 0.018 78 / 0.45);
+    border: 2px solid oklch(92% 0.045 222 / 0.75);
     background:
-      linear-gradient(90deg, transparent calc(50% - 1px), oklch(46% 0.018 78 / 0.35) calc(50% - 1px), oklch(46% 0.018 78 / 0.35) calc(50% + 1px), transparent calc(50% + 1px)),
-      linear-gradient(0deg, transparent calc(50% - 1px), oklch(46% 0.018 78 / 0.35) calc(50% - 1px), oklch(46% 0.018 78 / 0.35) calc(50% + 1px), transparent calc(50% + 1px));
+      linear-gradient(90deg, transparent calc(50% - 1px), oklch(96% 0.035 230 / 0.65) calc(50% - 1px), oklch(96% 0.035 230 / 0.65) calc(50% + 1px), transparent calc(50% + 1px)),
+      linear-gradient(0deg, transparent calc(50% - 1px), oklch(96% 0.035 230 / 0.65) calc(50% - 1px), oklch(96% 0.035 230 / 0.65) calc(50% + 1px), transparent calc(50% + 1px)),
+      repeating-linear-gradient(135deg, oklch(97% 0.035 225 / 0.2) 0 8px, transparent 8px 17px);
+    box-shadow: inset 0 0 42px oklch(78% 0.08 220 / 0.35);
   }
 
   .height-note {
@@ -211,9 +216,9 @@
 
   .plateau {
     position: absolute;
-    width: 154px;
+    width: 138px;
     aspect-ratio: 1;
-    margin: -77px 0 0 -77px;
+    margin: -69px 0 0 -69px;
     border: 0;
     border-radius: 50%;
     color: var(--ink);
@@ -233,12 +238,16 @@
     border-radius: 50%;
     border: 1px solid var(--line);
     background:
-      radial-gradient(circle at 50% 50%, oklch(94% 0.014 82) 0 18%, transparent 19%),
+      radial-gradient(circle at 50% 50%, oklch(97% 0.021 224) 0 18%, transparent 19%),
+      repeating-conic-gradient(from calc(var(--rot) + 6deg), oklch(96% 0.025 230) 0 5deg, oklch(67% 0.035 74) 5deg 9deg, transparent 9deg 15deg),
       repeating-conic-gradient(from var(--rot), oklch(28% 0.02 78 / 0.45) 0 2deg, transparent 2deg 18deg),
-      conic-gradient(from calc(var(--rot) + 20deg), var(--color), oklch(87% 0.018 82) 17%, oklch(87% 0.018 82) 48%, color-mix(in oklch, var(--color), var(--ink) 18%) 67%, oklch(87% 0.018 82));
+      conic-gradient(from calc(var(--rot) + 20deg), var(--color), oklch(96% 0.035 225) 17%, oklch(75% 0.055 224) 31%, oklch(96% 0.035 225) 48%, color-mix(in oklch, var(--color), var(--ink) 18%) 67%, oklch(98% 0.025 230));
     box-shadow:
-      inset 0 0 0 8px oklch(95% 0.011 82 / 0.78),
-      inset 0 0 0 22px oklch(56% 0.018 78 / 0.12),
+      inset 0 0 0 6px oklch(99% 0.013 230 / 0.86),
+      inset 0 0 0 20px oklch(96% 0.025 230 / 0.44),
+      0 0 0 9px oklch(97% 0.018 230 / 0.78),
+      0 0 0 14px oklch(67% 0.035 74 / 0.32),
+      0 0 34px color-mix(in oklch, var(--color), oklch(95% 0.02 225) 55%),
       0 12px 28px oklch(30% 0.025 80 / 0.14);
     transition: transform 900ms cubic-bezier(.16, 1, .3, 1), filter 240ms ease;
     transform: rotate(var(--rot));
@@ -253,6 +262,29 @@
     border-radius: 999px;
     transform-origin: 0 0;
     background: var(--ink);
+  }
+
+  .plateau::before {
+    content: "";
+    position: absolute;
+    inset: -18px;
+    border-radius: 50%;
+    background:
+      repeating-conic-gradient(from calc(var(--rot) + 3deg), oklch(98% 0.022 232) 0 4deg, oklch(72% 0.04 78) 4deg 7deg, transparent 7deg 13deg);
+    filter: blur(0.2px);
+    opacity: 0.92;
+    z-index: -1;
+  }
+
+  .plateau::after {
+    content: "";
+    position: absolute;
+    inset: -28px;
+    border-radius: 50%;
+    background: repeating-conic-gradient(from 0deg, color-mix(in oklch, var(--color), oklch(98% 0.02 230) 35%) 0 2deg, transparent 2deg 10deg);
+    mask: radial-gradient(circle, transparent 0 44%, black 45% 55%, transparent 56%);
+    opacity: 0.75;
+    z-index: -2;
   }
 
   .plateau .ring::before {
@@ -281,8 +313,9 @@
     background:
       radial-gradient(ellipse at 50% 16%, oklch(97% 0.013 83) 0 10%, oklch(74% 0.025 82) 11% 18%, transparent 19%),
       linear-gradient(90deg, oklch(48% 0.025 78 / 0.18), transparent 26% 74%, oklch(96% 0.012 82 / 0.55)),
-      linear-gradient(145deg, oklch(86% 0.021 82), oklch(63% 0.032 78));
-    border: 1px solid oklch(52% 0.024 78 / 0.46);
+      linear-gradient(145deg, oklch(91% 0.035 230), oklch(60% 0.045 76));
+    border: 2px solid oklch(98% 0.022 230 / 0.72);
+    box-shadow: inset 0 -16px 24px oklch(35% 0.025 78 / 0.18), 0 0 0 5px color-mix(in oklch, var(--color), transparent 62%);
     transform: rotate(0deg);
     z-index: 1;
   }
@@ -338,10 +371,10 @@
     color: var(--ink);
   }
 
-  .p1 { left: 29%; top: 32%; --color: var(--clay); --rot: 0deg; }
-  .p2 { left: 71%; top: 32%; --color: var(--leaf); --rot: 0deg; }
-  .p3 { left: 29%; top: 72%; --color: var(--blue); --rot: 0deg; }
-  .p4 { left: 71%; top: 72%; --color: var(--violet); --rot: 0deg; }
+  .p1 { left: 29%; top: 35%; --color: var(--clay); --rot: 0deg; }
+  .p2 { left: 71%; top: 35%; --color: var(--leaf); --rot: 0deg; }
+  .p3 { left: 29%; top: 74%; --color: var(--blue); --rot: 0deg; }
+  .p4 { left: 71%; top: 74%; --color: var(--violet); --rot: 0deg; }
 
   .control-panel {
     display: grid;
@@ -719,6 +752,103 @@
     grid-column: 1 / -1;
   }
 
+  .vase-viewer {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    display: grid;
+    place-items: center;
+    padding: 18px;
+    background:
+      radial-gradient(circle at 50% 18%, oklch(97% 0.045 225 / 0.3), transparent 30%),
+      oklch(13% 0.018 245 / 0.82);
+    backdrop-filter: blur(10px);
+  }
+
+  .vase-viewer[hidden] {
+    display: none;
+  }
+
+  .viewer-shell {
+    width: min(92vw, 620px);
+    height: min(86vh, 560px);
+    border: 1px solid oklch(95% 0.028 225 / 0.42);
+    background:
+      linear-gradient(180deg, oklch(96% 0.028 225 / 0.18), transparent 38%),
+      oklch(18% 0.022 245 / 0.94);
+    color: var(--paper);
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    box-shadow: 0 24px 68px oklch(6% 0.012 245 / 0.45);
+  }
+
+  .viewer-head,
+  .viewer-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: oklch(88% 0.028 225 / 0.72);
+  }
+
+  .viewer-head strong {
+    color: var(--paper);
+    font-size: 13px;
+  }
+
+  .viewer-close {
+    width: 38px;
+    height: 34px;
+    border: 1px solid oklch(95% 0.028 225 / 0.34);
+    background: transparent;
+    color: var(--paper);
+    cursor: pointer;
+    font-family: var(--mono);
+  }
+
+  .viewer-canvas-wrap {
+    position: relative;
+    min-height: 0;
+    border-block: 1px solid oklch(95% 0.028 225 / 0.22);
+    overflow: hidden;
+  }
+
+  #vaseCanvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    cursor: grab;
+  }
+
+  #vaseCanvas:active {
+    cursor: grabbing;
+  }
+
+  .viewer-canvas-wrap::before {
+    content: "";
+    position: absolute;
+    inset: 18px;
+    border: 1px solid oklch(95% 0.028 225 / 0.16);
+    pointer-events: none;
+  }
+
+  .viewer-error {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    color: oklch(88% 0.08 45);
+    font-family: var(--mono);
+    font-size: 12px;
+    text-align: center;
+  }
+
   @media (max-width: 760px) {
     .app {
       display: none;
@@ -888,16 +1018,16 @@
         <div class="structure"></div>
         <div class="height-note">structure 40 cm</div>
 
-        <button class="plateau p1" id="plateau-1" data-id="1" onclick="selectPlateau(1)">
+        <button class="plateau p1" id="plateau-1" data-id="1" onclick="handlePlateauClick(event, 1)">
           <span class="ring"></span><span class="vase"></span><strong>1</strong><small>eveil</small>
         </button>
-        <button class="plateau p2" id="plateau-2" data-id="2" onclick="selectPlateau(2)">
+        <button class="plateau p2" id="plateau-2" data-id="2" onclick="handlePlateauClick(event, 2)">
           <span class="ring"></span><span class="vase"></span><strong>2</strong><small>echo</small>
         </button>
-        <button class="plateau p3" id="plateau-3" data-id="3" onclick="selectPlateau(3)">
+        <button class="plateau p3" id="plateau-3" data-id="3" onclick="handlePlateauClick(event, 3)">
           <span class="ring"></span><span class="vase"></span><strong>3</strong><small>derive</small>
         </button>
-        <button class="plateau p4" id="plateau-4" data-id="4" onclick="selectPlateau(4)">
+        <button class="plateau p4" id="plateau-4" data-id="4" onclick="handlePlateauClick(event, 4)">
           <span class="ring"></span><span class="vase"></span><strong>4</strong><small>choeur</small>
         </button>
       </div>
@@ -990,6 +1120,24 @@
     </section>
   </div>
 </main>
+
+<section class="vase-viewer" id="vaseViewer" hidden aria-label="Visualisation 3D du vase">
+  <div class="viewer-shell">
+    <div class="viewer-head">
+      <span>Reliquaire 3D</span>
+      <strong id="viewerTitle">Vase 1</strong>
+      <button class="viewer-close" onclick="closeVaseViewer()" aria-label="Fermer">X</button>
+    </div>
+    <div class="viewer-canvas-wrap">
+      <canvas id="vaseCanvas"></canvas>
+      <div class="viewer-error" id="viewerError" hidden></div>
+    </div>
+    <div class="viewer-foot">
+      <span>glisser pour tourner</span>
+      <span>dos / profil / face</span>
+    </div>
+  </div>
+</section>
 
 <div class="toast" id="toast"></div>
 
@@ -1156,6 +1304,15 @@ function selectPlateau(id) {
   updateControls();
 }
 
+function handlePlateauClick(event, id) {
+  if (event.target.closest(".vase")) {
+    event.stopPropagation();
+    openVaseViewer(id);
+    return;
+  }
+  selectPlateau(id);
+}
+
 function setSpeed(speed) {
   state.speed = speed;
   ["slow", "medium", "fast"].forEach(key => {
@@ -1269,6 +1426,181 @@ setSpeed(state.speed);
 pollStatus();
 setInterval(updateScenario, 15000);
 setInterval(pollStatus, CONFIG.STATUS_INTERVAL);
+</script>
+<script>
+let THREE;
+const threeReady = import("./vendor/three.module.min.js").then((module) => {
+  THREE = module;
+  return module;
+}).catch((error) => {
+  window.__threeError = error.message;
+  throw error;
+});
+
+let viewer;
+let drag = { active: false, x: 0 };
+
+const palettes = {
+  1: { body: 0xd9b28a, back: 0x9f4f31, glow: 0xf5d06f },
+  2: { body: 0xc9d7c4, back: 0x4f8b56, glow: 0xa7f0cf },
+  3: { body: 0xbfd7df, back: 0x4f8299, glow: 0xaee8ff },
+  4: { body: 0xd4c4dc, back: 0x7a5c99, glow: 0xe2c1ff },
+};
+
+async function ensureViewer() {
+  if (viewer) return viewer;
+  await threeReady;
+
+  const canvas = document.getElementById("vaseCanvas");
+  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+  renderer.setPixelRatio(1);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
+  camera.position.set(0, 0.2, 6.8);
+
+  const group = new THREE.Group();
+  scene.add(group);
+  scene.add(new THREE.HemisphereLight(0xf7fbff, 0x483f33, 2.25));
+  const key = new THREE.DirectionalLight(0xffefc2, 2.1);
+  key.position.set(3, 4, 4);
+  scene.add(key);
+  const ice = new THREE.DirectionalLight(0xaee8ff, 1.25);
+  ice.position.set(-4, 1, 3);
+  scene.add(ice);
+
+  viewer = { canvas, renderer, scene, camera, group, vase: null, halo: null };
+
+  canvas.addEventListener("pointerdown", (event) => {
+    drag = { active: true, x: event.clientX };
+    canvas.setPointerCapture(event.pointerId);
+  });
+
+  canvas.addEventListener("pointermove", (event) => {
+    if (!drag.active) return;
+    const dx = event.clientX - drag.x;
+    drag.x = event.clientX;
+    group.rotation.y += dx * 0.015;
+    renderViewer();
+  });
+
+  canvas.addEventListener("pointerup", () => {
+    drag.active = false;
+  });
+
+  window.addEventListener("resize", resizeViewer);
+  return viewer;
+}
+
+function makeVase(id) {
+  const palette = palettes[id] || palettes[1];
+  const shape = [
+    [0.0, -1.7], [0.72, -1.58], [0.98, -0.92], [1.05, -0.22],
+    [0.87, 0.6], [0.48, 1.08], [0.34, 1.45], [0.18, 1.62], [0.0, 1.66],
+  ].map(([x, y]) => new THREE.Vector2(x, y));
+
+  const group = new THREE.Group();
+  const vase = new THREE.Mesh(
+    new THREE.LatheGeometry(shape, 96),
+    new THREE.MeshStandardMaterial({
+      color: palette.body,
+      roughness: 0.58,
+      metalness: 0.02,
+    })
+  );
+  group.add(vase);
+
+  const backMark = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.18, 0.26, 1.42, 32),
+    new THREE.MeshStandardMaterial({
+      color: palette.back,
+      roughness: 0.44,
+      metalness: 0.04,
+      emissive: palette.back,
+      emissiveIntensity: 0.06,
+    })
+  );
+  backMark.position.set(0, -0.12, -1.02);
+  backMark.rotation.x = Math.PI / 2;
+  backMark.scale.x = 0.58;
+  group.add(backMark);
+
+  const mouth = new THREE.Mesh(
+    new THREE.TorusGeometry(0.35, 0.055, 18, 64),
+    new THREE.MeshStandardMaterial({ color: 0xf4f0df, roughness: 0.35 })
+  );
+  mouth.position.y = 1.56;
+  mouth.rotation.x = Math.PI / 2;
+  group.add(mouth);
+
+  const halo = new THREE.Mesh(
+    new THREE.TorusGeometry(1.45, 0.018, 12, 128),
+    new THREE.MeshBasicMaterial({ color: palette.glow, transparent: true, opacity: 0.7 })
+  );
+  halo.position.y = 0.26;
+  halo.rotation.x = Math.PI / 2;
+  group.add(halo);
+
+  const fur = new THREE.Group();
+  const furMaterial = new THREE.MeshStandardMaterial({ color: 0xf3f4ed, roughness: 0.92 });
+  for (let i = 0; i < 36; i += 1) {
+    const strand = new THREE.Mesh(new THREE.ConeGeometry(0.025, 0.34, 5), furMaterial);
+    const angle = (i / 36) * Math.PI * 2;
+    strand.position.set(Math.cos(angle) * 1.34, -1.78, Math.sin(angle) * 1.34);
+    strand.rotation.z = Math.PI / 2;
+    strand.rotation.y = -angle;
+    fur.add(strand);
+  }
+  group.add(fur);
+
+  return group;
+}
+
+function resizeViewer() {
+  if (!viewer) return;
+  const rect = viewer.canvas.getBoundingClientRect();
+  const width = Math.max(1, Math.floor(rect.width));
+  const height = Math.max(1, Math.floor(rect.height));
+  viewer.renderer.setSize(width, height, false);
+  viewer.camera.aspect = width / height;
+  viewer.camera.updateProjectionMatrix();
+  renderViewer();
+}
+
+function renderViewer() {
+  if (!viewer) return;
+  viewer.renderer.render(viewer.scene, viewer.camera);
+}
+
+window.openVaseViewer = async function openVaseViewer(id) {
+  document.getElementById("vaseViewer").hidden = false;
+  document.getElementById("viewerTitle").textContent = `Vase ${id}`;
+  document.getElementById("viewerError").hidden = true;
+  try {
+    const v = await ensureViewer();
+    if (v.vase) v.group.remove(v.vase);
+    v.vase = makeVase(id);
+    v.group.add(v.vase);
+    v.group.rotation.set(-0.08, Math.PI * 0.18, 0);
+    requestAnimationFrame(() => {
+      resizeViewer();
+      renderViewer();
+    });
+  } catch (error) {
+    const err = document.getElementById("viewerError");
+    err.hidden = false;
+    err.textContent = `Erreur 3D: ${error.message || window.__threeError || "inconnue"}`;
+  }
+};
+
+window.closeVaseViewer = function closeVaseViewer() {
+  document.getElementById("vaseViewer").hidden = true;
+};
+
+const directVase = Number(new URLSearchParams(window.location.search).get("vase"));
+if ([1, 2, 3, 4].includes(directVase)) {
+  requestAnimationFrame(() => window.openVaseViewer(directVase));
+}
 </script>
 </body>
 </html>
