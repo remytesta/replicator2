@@ -823,10 +823,17 @@
     height: 100%;
     display: block;
     cursor: grab;
+    touch-action: none;
+    user-select: none;
   }
 
   #vaseCanvas:active {
     cursor: grabbing;
+  }
+
+  .viewer-canvas-wrap {
+    touch-action: none;
+    user-select: none;
   }
 
   .viewer-canvas-wrap::before {
@@ -1444,6 +1451,7 @@ const threeReady = Promise.all([
 
 let viewer;
 let viewerFrame = null;
+let manualDrag = { active: false, x: 0, y: 0 };
 
 const palettes = {
   1: { body: 0xd9b28a, back: 0x9f4f31, glow: 0xf5d06f },
@@ -1484,6 +1492,30 @@ async function ensureViewer() {
   controls.addEventListener("change", renderViewer);
 
   viewer = { canvas, renderer, scene, camera, controls, group, vase: null, halo: null };
+  const dragSurface = canvas.parentElement;
+
+  dragSurface.addEventListener("pointerdown", (event) => {
+    manualDrag = { active: true, x: event.clientX, y: event.clientY };
+    dragSurface.setPointerCapture(event.pointerId);
+  });
+
+  dragSurface.addEventListener("pointermove", (event) => {
+    if (!manualDrag.active || !viewer?.vase) return;
+    const dx = event.clientX - manualDrag.x;
+    const dy = event.clientY - manualDrag.y;
+    manualDrag = { active: true, x: event.clientX, y: event.clientY };
+    viewer.vase.rotation.y += dx * 0.015;
+    viewer.vase.rotation.x = Math.max(-0.9, Math.min(0.9, viewer.vase.rotation.x + dy * 0.01));
+    renderViewer();
+  });
+
+  dragSurface.addEventListener("pointerup", () => {
+    manualDrag.active = false;
+  });
+
+  dragSurface.addEventListener("pointercancel", () => {
+    manualDrag.active = false;
+  });
 
   window.addEventListener("resize", resizeViewer);
   return viewer;

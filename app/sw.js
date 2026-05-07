@@ -1,4 +1,4 @@
-const CACHE = 'replicator2-v2'
+const CACHE = 'replicator2-v3'
 const FILES = [
   '/',
   '/index.html',
