@@ -3,902 +3,1072 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#ede9df">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>REPLICATOR 2</title>
 <link rel="manifest" href="manifest.json">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
-
 <style>
-  /* =============================================
-     VARIABLES & RESET
-  ============================================= */
   :root {
-    --bg:         #ffffff;
-    --bg-off:     #f5f4f2;
-    --border:     #e2e0dc;
-    --text:       #111110;
-    --muted:      #888784;
-    --on:         #111110;
-    --on-text:    #ffffff;
-    --heat:       #c94f1a;
-    --heat-bg:    #fdf1ec;
-    --heat-border:#f0c4b0;
-    --mono:       'DM Mono', monospace;
-    --sans:       'Syne', sans-serif;
-    --radius:     2px;
-    --transition: 160ms ease;
+    --paper: oklch(93% 0.016 82);
+    --paper-2: oklch(88% 0.018 79);
+    --ink: oklch(18% 0.018 80);
+    --muted: oklch(49% 0.026 76);
+    --line: oklch(73% 0.026 78);
+    --clay: oklch(55% 0.115 41);
+    --leaf: oklch(47% 0.09 146);
+    --blue: oklch(44% 0.075 230);
+    --violet: oklch(46% 0.082 304);
+    --danger: oklch(50% 0.16 31);
+    --shadow: 0 18px 42px oklch(28% 0.025 80 / 0.16);
+    --mono: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  * { box-sizing: border-box; }
 
   html, body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--mono);
-    font-size: 14px;
-    line-height: 1.4;
-    min-height: 100vh;
-    -webkit-font-smoothing: antialiased;
-  }
-
-  /* =============================================
-     LAYOUT
-  ============================================= */
-  .app {
-    max-width: 520px;
-    margin: 0 auto;
-    padding: 0 0 80px;
-  }
-
-  /* =============================================
-     HEADER
-  ============================================= */
-  header {
-    padding: 32px 24px 24px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-  }
-
-  .logo {
+    min-height: 100%;
+    margin: 0;
+    background:
+      linear-gradient(90deg, oklch(35% 0.012 80 / 0.05) 1px, transparent 1px),
+      linear-gradient(0deg, oklch(35% 0.012 80 / 0.05) 1px, transparent 1px),
+      var(--paper);
+    background-size: 24px 24px;
+    color: var(--ink);
     font-family: var(--sans);
-    font-size: 22px;
-    font-weight: 800;
-    letter-spacing: -0.5px;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  button, input { font: inherit; }
+  button { -webkit-tap-highlight-color: transparent; }
+
+  .app {
+    min-height: 100vh;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+  }
+
+  .topbar {
+    min-height: 58px;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    border-bottom: 1px solid var(--line);
+    background: oklch(94% 0.014 82 / 0.9);
+    backdrop-filter: blur(10px);
+  }
+
+  .brand {
+    display: flex;
+    flex-direction: column;
     line-height: 1;
   }
 
-  .logo span {
-    display: block;
-    font-size: 11px;
-    font-weight: 400;
+  .brand span {
     font-family: var(--mono);
-    color: var(--muted);
-    letter-spacing: 0.08em;
-    margin-bottom: 4px;
-    text-transform: uppercase;
-  }
-
-  .status-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--border);
-    transition: background var(--transition);
-    flex-shrink: 0;
-    margin-bottom: 4px;
-  }
-
-  .status-dot.connected { background: #2d9e2d; }
-  .status-dot.error     { background: #c94f1a; }
-
-  /* =============================================
-     SECTIONS
-  ============================================= */
-  section {
-    padding: 24px 24px 0;
-  }
-
-  .section-label {
     font-size: 10px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
+    letter-spacing: 0.16em;
     color: var(--muted);
-    margin-bottom: 12px;
-    font-family: var(--mono);
+    text-transform: uppercase;
+    margin-bottom: 5px;
   }
 
-  /* =============================================
-     DIVIDER
-  ============================================= */
-  .divider {
-    height: 1px;
-    background: var(--border);
-    margin: 24px 24px 0;
+  .brand strong {
+    font-size: 21px;
+    letter-spacing: 0;
+    font-weight: 800;
   }
 
-  /* =============================================
-     TOGGLE BUTTONS (moteurs, ventilateurs)
-  ============================================= */
-  .toggle-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-  }
-
-  .toggle-grid.four { grid-template-columns: 1fr 1fr 1fr 1fr; }
-
-  .toggle-btn {
+  .system {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 14px 16px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: var(--bg);
-    cursor: pointer;
-    transition: all var(--transition);
-    user-select: none;
-    gap: 6px;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .toggle-btn:active { opacity: 0.7; }
-
-  .toggle-btn .btn-label {
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 11px;
     color: var(--muted);
-    transition: color var(--transition);
+    white-space: nowrap;
   }
 
-  .toggle-btn .btn-value {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text);
-    letter-spacing: 0.02em;
+  .dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--line);
+    box-shadow: 0 0 0 4px oklch(73% 0.026 78 / 0.25);
   }
 
-  .toggle-btn .btn-state {
-    font-size: 10px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-top: auto;
+  .dot.connected {
+    background: var(--leaf);
+    box-shadow: 0 0 0 4px oklch(47% 0.09 146 / 0.18);
   }
 
-  /* Active state */
-  .toggle-btn.active {
-    background: var(--on);
-    border-color: var(--on);
+  .dot.error {
+    background: var(--danger);
+    box-shadow: 0 0 0 4px oklch(50% 0.16 31 / 0.16);
   }
 
-  .toggle-btn.active .btn-label { color: rgba(255,255,255,0.5); }
-  .toggle-btn.active .btn-value { color: var(--on-text); }
-  .toggle-btn.active .btn-state { color: rgba(255,255,255,0.5); }
+  .stage {
+    width: min(100%, 1120px);
+    margin: 0 auto;
+    padding: 14px 16px 16px;
+    display: grid;
+    grid-template-columns: minmax(330px, 1fr) minmax(300px, 390px);
+    gap: 16px;
+    align-items: stretch;
+  }
 
-  /* =============================================
-     HEAT CONTROLS (plateau + tête)
-  ============================================= */
-  .heat-card {
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
+  .map-panel, .control-panel {
+    min-height: 0;
+  }
+
+  .map-panel {
+    position: relative;
+    border: 1px solid var(--line);
+    background: oklch(91% 0.017 84 / 0.82);
+    box-shadow: var(--shadow);
     overflow: hidden;
-    margin-bottom: 8px;
-    transition: border-color var(--transition);
   }
 
-  .heat-card.active {
-    border-color: var(--heat-border);
-    background: var(--heat-bg);
-  }
-
-  .heat-header {
+  .map-head {
+    height: 48px;
+    padding: 10px 14px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 14px 16px;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
+    border-bottom: 1px solid var(--line);
+    font-family: var(--mono);
   }
 
-  .heat-header:active { opacity: 0.7; }
-
-  .heat-info { display: flex; flex-direction: column; gap: 3px; }
-
-  .heat-name {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text);
-  }
-
-  .heat-temp-display {
+  .act-label {
     font-size: 11px;
+    letter-spacing: 0.12em;
     color: var(--muted);
-  }
-
-  .heat-temp-display.hot { color: var(--heat); }
-
-  .heat-toggle {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .heat-state-label {
-    font-size: 10px;
-    letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--muted);
   }
 
-  /* Pill toggle */
-  .pill {
-    width: 40px;
-    height: 22px;
-    border-radius: 11px;
-    background: var(--border);
-    position: relative;
-    transition: background var(--transition);
-    flex-shrink: 0;
-  }
-
-  .pill::after {
-    content: '';
-    position: absolute;
-    top: 3px; left: 3px;
-    width: 16px; height: 16px;
-    border-radius: 50%;
-    background: white;
-    transition: transform var(--transition);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-  }
-
-  .active .pill { background: var(--heat); }
-  .active .pill::after { transform: translateX(18px); }
-
-  /* Temp slider (expanded) */
-  .heat-body {
-    padding: 0 16px 14px;
-    display: none;
-  }
-
-  .heat-card.active .heat-body { display: block; }
-
-  .temp-row {
+  .clock {
     display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .temp-row input[type=range] {
-    flex: 1;
-    -webkit-appearance: none;
-    height: 2px;
-    background: var(--heat-border);
-    border-radius: 1px;
-    outline: none;
-  }
-
-  .temp-row input[type=range]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 16px; height: 16px;
-    border-radius: 50%;
-    background: var(--heat);
-    cursor: pointer;
-  }
-
-  .temp-value {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--heat);
-    min-width: 46px;
-    text-align: right;
-  }
-
-  /* =============================================
-     CHORÉGRAPHIES
-  ============================================= */
-  .choreo-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    align-items: baseline;
     gap: 8px;
   }
 
-  .choreo-btn {
-    padding: 20px 16px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: var(--bg);
-    cursor: pointer;
-    text-align: left;
-    transition: all var(--transition);
-    -webkit-tap-highlight-color: transparent;
+  .clock strong {
+    font-size: 22px;
+    color: var(--ink);
   }
 
-  .choreo-btn:active { background: var(--bg-off); }
-
-  .choreo-btn.playing {
-    border-color: var(--text);
-    background: var(--bg-off);
-  }
-
-  .choreo-num {
-    font-size: 11px;
-    color: var(--muted);
-    letter-spacing: 0.08em;
-    margin-bottom: 4px;
-  }
-
-  .choreo-name {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text);
-  }
-
-  .choreo-status {
+  .clock span {
     font-size: 10px;
     color: var(--muted);
-    margin-top: 6px;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
   }
 
-  .choreo-btn.playing .choreo-status { color: var(--text); }
+  .hour-line {
+    height: 6px;
+    background: var(--paper-2);
+    border-bottom: 1px solid var(--line);
+  }
 
-  /* Stop button */
-  .stop-btn {
-    width: 100%;
+  .hour-fill {
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, var(--clay), var(--leaf), var(--blue), var(--violet));
+    transition: width 600ms cubic-bezier(.22, 1, .36, 1);
+  }
+
+  .map {
+    position: relative;
+    height: calc(100% - 55px);
+    min-height: 350px;
     padding: 16px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: var(--bg);
-    cursor: pointer;
+  }
+
+  .structure {
+    position: absolute;
+    inset: 42px 56px 34px;
+    border: 2px solid oklch(46% 0.018 78 / 0.45);
+    background:
+      linear-gradient(90deg, transparent calc(50% - 1px), oklch(46% 0.018 78 / 0.35) calc(50% - 1px), oklch(46% 0.018 78 / 0.35) calc(50% + 1px), transparent calc(50% + 1px)),
+      linear-gradient(0deg, transparent calc(50% - 1px), oklch(46% 0.018 78 / 0.35) calc(50% - 1px), oklch(46% 0.018 78 / 0.35) calc(50% + 1px), transparent calc(50% + 1px));
+  }
+
+  .height-note {
+    position: absolute;
+    right: 18px;
+    top: 70px;
+    writing-mode: vertical-rl;
     font-family: var(--mono);
-    font-size: 12px;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .plateau {
+    position: absolute;
+    width: 154px;
+    aspect-ratio: 1;
+    margin: -77px 0 0 -77px;
+    border: 0;
+    border-radius: 50%;
+    color: var(--ink);
+    background: transparent;
+    cursor: pointer;
+    isolation: isolate;
+  }
+
+  .plateau[disabled] {
+    cursor: default;
+    opacity: 0.42;
+  }
+
+  .plateau .ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background:
+      radial-gradient(circle at 50% 50%, oklch(94% 0.014 82) 0 25%, transparent 26%),
+      conic-gradient(from var(--rot), var(--color), oklch(87% 0.018 82) 24%, oklch(87% 0.018 82) 50%, var(--color) 74%, oklch(87% 0.018 82));
+    box-shadow: inset 0 0 0 10px oklch(95% 0.011 82 / 0.82), 0 12px 28px oklch(30% 0.025 80 / 0.14);
+    transition: transform 900ms cubic-bezier(.16, 1, .3, 1), filter 240ms ease;
+    transform: rotate(var(--rot));
+  }
+
+  .plateau:not([disabled]):active .ring {
+    filter: brightness(0.96);
+    transform: rotate(var(--rot)) scale(0.98);
+  }
+
+  .plateau .vase {
+    position: absolute;
+    inset: 32px;
+    border-radius: 48% 52% 44% 56% / 38% 42% 58% 62%;
+    background:
+      radial-gradient(circle at 42% 28%, oklch(96% 0.013 83) 0 13%, transparent 14%),
+      linear-gradient(145deg, oklch(84% 0.021 82), oklch(66% 0.032 78));
+    border: 1px solid oklch(52% 0.024 78 / 0.46);
+    transform: rotate(0deg);
+    z-index: 1;
+  }
+
+  .plateau strong {
+    position: absolute;
+    z-index: 2;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-family: var(--mono);
+    font-size: 20px;
+    color: oklch(22% 0.022 80);
+  }
+
+  .plateau small {
+    position: absolute;
+    z-index: 2;
+    left: 50%;
+    bottom: 18px;
+    transform: translateX(-50%);
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .p1 { left: 29%; top: 32%; --color: var(--clay); --rot: 0deg; }
+  .p2 { left: 71%; top: 32%; --color: var(--leaf); --rot: 0deg; }
+  .p3 { left: 29%; top: 72%; --color: var(--blue); --rot: 0deg; }
+  .p4 { left: 71%; top: 72%; --color: var(--violet); --rot: 0deg; }
+
+  .control-panel {
+    display: grid;
+    grid-template-rows: auto auto 1fr auto;
+    gap: 10px;
+  }
+
+  .story {
+    border: 1px solid var(--line);
+    background: oklch(94% 0.014 82 / 0.9);
+    padding: 14px;
+  }
+
+  .story h1 {
+    margin: 0 0 8px;
+    font-size: 28px;
+    line-height: 0.98;
+    letter-spacing: 0;
+  }
+
+  .story p {
+    margin: 0;
+    max-width: 52ch;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.35;
+  }
+
+  .selected {
+    border: 1px solid var(--line);
+    background: oklch(92% 0.018 82 / 0.92);
+    padding: 12px;
+  }
+
+  .selected-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .selected-title {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .selected-title span {
+    font-family: var(--mono);
+    font-size: 10px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--muted);
-    transition: all var(--transition);
-    margin-top: 8px;
-    -webkit-tap-highlight-color: transparent;
   }
 
-  .stop-btn:active  { background: #fff0ec; border-color: var(--heat-border); color: var(--heat); }
-  .stop-btn.urgent  { border-color: var(--heat); color: var(--heat); }
+  .selected-title strong {
+    font-size: 22px;
+  }
 
-  /* =============================================
-     TEMPERATURE STATUS BAR
-  ============================================= */
-  .temp-bar {
+  .speed {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-top: 12px;
+  }
+
+  .speed button, .move-grid button, .final-btn, .stop-btn {
+    border: 1px solid var(--line);
+    background: oklch(96% 0.011 82);
+    color: var(--ink);
+    min-height: 42px;
+    cursor: pointer;
+    transition: transform 140ms ease, background 140ms ease, border-color 140ms ease, color 140ms ease;
+  }
+
+  .speed button {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .speed button.active {
+    border-color: var(--ink);
+    color: var(--ink);
+    background: oklch(89% 0.018 82);
+  }
+
+  .move-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .move-grid button {
+    min-height: 76px;
     display: flex;
-    gap: 0;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-    margin-bottom: 8px;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 12px;
+    text-align: left;
   }
 
-  .temp-bar-item {
-    flex: 1;
-    padding: 10px 14px;
-    border-right: 1px solid var(--border);
+  .move-grid button:disabled, .final-btn:disabled {
+    opacity: 0.42;
+    cursor: default;
   }
 
-  .temp-bar-item:last-child { border-right: none; }
+  .move-grid strong {
+    font-size: 25px;
+    line-height: 1;
+  }
 
-  .temp-bar-label {
+  .move-grid span {
+    font-family: var(--mono);
     font-size: 10px;
     color: var(--muted);
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    margin-bottom: 2px;
   }
 
-  .temp-bar-val {
-    font-size: 16px;
-    font-weight: 500;
-    color: var(--text);
+  .final-btn {
+    min-height: 64px;
+    padding: 12px 14px;
+    text-align: left;
+    background: var(--ink);
+    color: var(--paper);
   }
 
-  .temp-bar-val.hot { color: var(--heat); }
+  .final-btn span {
+    display: block;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: oklch(88% 0.018 82 / 0.72);
+    margin-bottom: 4px;
+  }
 
-  /* =============================================
-     TOAST NOTIFICATIONS
-  ============================================= */
+  .final-btn strong {
+    font-size: 18px;
+  }
+
+  .footer {
+    padding: 10px 16px 14px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+    align-items: center;
+    border-top: 1px solid var(--line);
+    background: oklch(94% 0.014 82 / 0.92);
+  }
+
+  .timeline {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+
+  .act {
+    height: 8px;
+    background: oklch(82% 0.018 82);
+    overflow: hidden;
+  }
+
+  .act span {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: var(--ink);
+  }
+
+  .stop-btn {
+    min-height: 38px;
+    padding: 0 14px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .stop-btn {
+    border-color: oklch(65% 0.08 31);
+    color: var(--danger);
+    background: oklch(95% 0.022 42);
+  }
+
   .toast {
     position: fixed;
-    bottom: 24px;
     left: 50%;
-    transform: translateX(-50%) translateY(80px);
-    background: var(--text);
-    color: white;
-    padding: 10px 20px;
-    border-radius: 100px;
-    font-size: 12px;
-    letter-spacing: 0.04em;
+    bottom: 64px;
+    transform: translate(-50%, 22px);
     opacity: 0;
-    transition: all 300ms ease;
-    white-space: nowrap;
-    z-index: 100;
     pointer-events: none;
+    padding: 10px 14px;
+    max-width: min(92vw, 420px);
+    background: var(--ink);
+    color: var(--paper);
+    font-family: var(--mono);
+    font-size: 12px;
+    text-align: center;
+    transition: opacity 220ms ease, transform 220ms ease;
+    z-index: 10;
   }
 
   .toast.show {
     opacity: 1;
-    transform: translateX(-50%) translateY(0);
+    transform: translate(-50%, 0);
   }
 
-  /* =============================================
-     ADMIN SECTION
-  ============================================= */
-  .admin-toggle {
-    text-align: center;
-    padding: 20px 24px 0;
+  .dev-panel {
+    position: fixed;
+    left: 12px;
+    bottom: 60px;
+    z-index: 9;
+    width: min(360px, calc(100vw - 24px));
+    padding: 10px;
+    border: 1px solid oklch(52% 0.024 78 / 0.55);
+    background: oklch(94% 0.014 82 / 0.94);
+    box-shadow: 0 14px 34px oklch(28% 0.025 80 / 0.18);
   }
 
-  .admin-toggle button {
-    font-family: var(--mono);
-    font-size: 11px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--muted);
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 8px;
-  }
-
-  .admin-panel {
+  .dev-panel[hidden] {
     display: none;
-    padding: 16px 24px 0;
   }
 
-  .admin-panel.visible { display: block; }
-
-  .admin-input {
+  .dev-head {
     display: flex;
-    gap: 8px;
-    margin-bottom: 12px;
-  }
-
-  .admin-input input {
-    flex: 1;
-    padding: 10px 14px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
     font-family: var(--mono);
-    font-size: 13px;
-    background: var(--bg);
-    color: var(--text);
-    outline: none;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-transform: uppercase;
   }
 
-  .admin-input input:focus { border-color: var(--text); }
+  .dev-minute {
+    color: var(--ink);
+    font-size: 13px;
+    letter-spacing: 0;
+  }
 
-  .admin-input button {
-    padding: 10px 16px;
-    border: 1px solid var(--text);
-    border-radius: var(--radius);
-    background: var(--text);
-    color: white;
+  .dev-controls {
+    display: grid;
+    grid-template-columns: 42px 1fr 42px;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .dev-controls button,
+  .dev-reset {
+    min-height: 34px;
+    border: 1px solid var(--line);
+    background: oklch(96% 0.011 82);
+    color: var(--ink);
+    cursor: pointer;
     font-family: var(--mono);
     font-size: 12px;
-    cursor: pointer;
-    letter-spacing: 0.06em;
   }
 
-  /* =============================================
-     RESPONSIVE
-  ============================================= */
-  @media (max-width: 380px) {
-    header { padding: 24px 16px 20px; }
-    section { padding: 20px 16px 0; }
-    .divider { margin: 20px 16px 0; }
-    .toggle-grid.four { grid-template-columns: 1fr 1fr; }
-    .admin-toggle, .admin-panel { padding-left: 16px; padding-right: 16px; }
+  .dev-controls input[type=range] {
+    width: 100%;
+    accent-color: var(--ink);
+  }
+
+  .dev-actions {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .dev-reset {
+    grid-column: 1 / -1;
+  }
+
+  @media (max-width: 760px) {
+    .stage {
+      grid-template-columns: 1fr;
+      padding: 10px;
+    }
+
+    .map {
+      min-height: 330px;
+    }
+
+    .control-panel {
+      grid-template-rows: auto auto auto auto;
+    }
+
+    .timeline {
+      grid-column: 1 / -1;
+      order: -1;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .topbar {
+      align-items: flex-start;
+    }
+
+    .brand strong {
+      font-size: 18px;
+    }
+
+    .system {
+      font-size: 10px;
+    }
+
+    .map {
+      min-height: 310px;
+      padding: 8px;
+    }
+
+    .structure {
+      inset: 34px 30px 28px;
+    }
+
+    .height-note {
+      display: none;
+    }
+
+    .plateau {
+      width: 118px;
+      margin: -59px 0 0 -59px;
+    }
+
+    .plateau .vase {
+      inset: 25px;
+    }
+
+    .plateau small {
+      bottom: 12px;
+    }
+
+    .story h1 {
+      font-size: 24px;
+    }
+
+    .move-grid button {
+      min-height: 68px;
+    }
+
+    .dev-panel {
+      bottom: 8px;
+    }
+  }
+
+  @media (min-width: 761px) and (max-height: 520px) {
+    .topbar {
+      min-height: 50px;
+      padding-block: 8px;
+    }
+
+    .stage {
+      height: calc(100vh - 103px);
+      padding: 10px 12px;
+      gap: 12px;
+    }
+
+    .map {
+      min-height: 0;
+      height: calc(100% - 55px);
+    }
+
+    .control-panel {
+      gap: 8px;
+    }
+
+    .story {
+      padding: 10px 12px;
+    }
+
+    .story h1 {
+      font-size: 21px;
+      margin-bottom: 6px;
+    }
+
+    .story p {
+      font-size: 12px;
+      line-height: 1.25;
+    }
+
+    .selected {
+      padding: 9px 10px;
+    }
+
+    .selected-title strong {
+      font-size: 20px;
+    }
+
+    .speed {
+      margin-top: 8px;
+    }
+
+    .speed button {
+      min-height: 32px;
+    }
+
+    .move-grid button {
+      min-height: 48px;
+      padding: 8px 10px;
+    }
+
+    .move-grid strong {
+      font-size: 22px;
+    }
+
+    .final-btn {
+      min-height: 46px;
+      padding: 8px 12px;
+    }
+
+    .final-btn strong {
+      font-size: 16px;
+    }
   }
 </style>
 </head>
 <body>
-
-<!-- =============================================
-     CONFIG — Modifier après installation
-============================================= -->
-<script>
-const CONFIG = {
-  API_URL:        "",                         // Meme serveur que la PWA: /api via Nginx
-  ADMIN_PASSWORD: "replicator2026",           // Mot de passe admin
-  BED_TEMP_DEFAULT:    60,                    // Température plateau (°C)
-  HOTEND_TEMP_DEFAULT: 200,                   // Température tête (°C)
-  STATUS_INTERVAL: 5000,                      // Rafraîchissement statut (ms)
-  CHOREO_NAMES: [
-    "Séquence I",
-    "Séquence II",
-    "Séquence III",
-    "Séquence IV",
-  ],
-};
-</script>
-
-<!-- =============================================
-     APP
-============================================= -->
 <div class="app">
-
-  <!-- Header -->
-  <header>
-    <div class="logo">
-      <span>Installation — 2026</span>
-      REPLICATOR 2
+  <header class="topbar">
+    <div class="brand">
+      <span>Installation interactive</span>
+      <strong>REPLICATOR 2</strong>
     </div>
-    <div class="status-dot" id="statusDot"></div>
+    <div class="system">
+      <i class="dot" id="statusDot"></i>
+      <span id="statusLabel">Connexion</span>
+    </div>
   </header>
 
-  <!-- Températures en direct -->
-  <section>
-    <div class="section-label">Températures</div>
-    <div class="temp-bar">
-      <div class="temp-bar-item">
-        <div class="temp-bar-label">Plateau</div>
-        <div class="temp-bar-val" id="tempBed">—</div>
-      </div>
-      <div class="temp-bar-item">
-        <div class="temp-bar-label">Tête</div>
-        <div class="temp-bar-val" id="tempHotend">—</div>
-      </div>
-    </div>
-  </section>
-
-  <div class="divider"></div>
-
-  <!-- Moteurs -->
-  <section>
-    <div class="section-label">Moteurs</div>
-    <div class="toggle-grid four">
-      <button class="toggle-btn" data-type="motor" data-id="1" onclick="toggleMotor(1)">
-        <span class="btn-label">Axe X</span>
-        <span class="btn-value">M1</span>
-        <span class="btn-state">off</span>
-      </button>
-      <button class="toggle-btn" data-type="motor" data-id="2" onclick="toggleMotor(2)">
-        <span class="btn-label">Axe Y</span>
-        <span class="btn-value">M2</span>
-        <span class="btn-state">off</span>
-      </button>
-      <button class="toggle-btn" data-type="motor" data-id="3" onclick="toggleMotor(3)">
-        <span class="btn-label">Axe Z</span>
-        <span class="btn-value">M3</span>
-        <span class="btn-state">off</span>
-      </button>
-      <button class="toggle-btn" data-type="motor" data-id="4" onclick="toggleMotor(4)">
-        <span class="btn-label">Extrud.</span>
-        <span class="btn-value">M4</span>
-        <span class="btn-state">off</span>
-      </button>
-    </div>
-  </section>
-
-  <div class="divider"></div>
-
-  <!-- Chauffe -->
-  <section>
-    <div class="section-label">Chauffe</div>
-
-    <!-- Plateau chauffant -->
-    <div class="heat-card" id="bedCard">
-      <div class="heat-header" onclick="toggleHeat('bed')">
-        <div class="heat-info">
-          <div class="heat-name">Plateau chauffant</div>
-          <div class="heat-temp-display" id="bedTempLabel">Cible : <span id="bedTempTarget">60</span>°C</div>
-        </div>
-        <div class="heat-toggle">
-          <span class="heat-state-label" id="bedStateLabel">off</span>
-          <div class="pill"></div>
+  <main class="stage">
+    <section class="map-panel" aria-label="Carte des plateaux">
+      <div class="map-head">
+        <div class="act-label" id="actLabel">Acte I</div>
+        <div class="clock">
+          <strong id="minuteNow">00</strong>
+          <span>minute</span>
         </div>
       </div>
-      <div class="heat-body">
-        <div class="temp-row">
-          <input type="range" min="30" max="110" value="60" id="bedSlider"
-            oninput="document.getElementById('bedTempTarget').textContent=this.value">
-          <span class="temp-value"><span id="bedSliderVal">60</span>°C</span>
-        </div>
-      </div>
-    </div>
+      <div class="hour-line"><div class="hour-fill" id="hourFill"></div></div>
+      <div class="map">
+        <div class="structure"></div>
+        <div class="height-note">structure 40 cm</div>
 
-    <!-- Tête chauffante -->
-    <div class="heat-card" id="hotendCard">
-      <div class="heat-header" onclick="toggleHeat('hotend')">
-        <div class="heat-info">
-          <div class="heat-name">Tête chauffante</div>
-          <div class="heat-temp-display" id="hotendTempLabel">Cible : <span id="hotendTempTarget">200</span>°C</div>
-        </div>
-        <div class="heat-toggle">
-          <span class="heat-state-label" id="hotendStateLabel">off</span>
-          <div class="pill"></div>
-        </div>
+        <button class="plateau p1" id="plateau-1" data-id="1" onclick="selectPlateau(1)">
+          <span class="ring"></span><span class="vase"></span><strong>1</strong><small>eveil</small>
+        </button>
+        <button class="plateau p2" id="plateau-2" data-id="2" onclick="selectPlateau(2)">
+          <span class="ring"></span><span class="vase"></span><strong>2</strong><small>echo</small>
+        </button>
+        <button class="plateau p3" id="plateau-3" data-id="3" onclick="selectPlateau(3)">
+          <span class="ring"></span><span class="vase"></span><strong>3</strong><small>derive</small>
+        </button>
+        <button class="plateau p4" id="plateau-4" data-id="4" onclick="selectPlateau(4)">
+          <span class="ring"></span><span class="vase"></span><strong>4</strong><small>choeur</small>
+        </button>
       </div>
-      <div class="heat-body">
-        <div class="temp-row">
-          <input type="range" min="150" max="280" value="200" id="hotendSlider"
-            oninput="document.getElementById('hotendTempTarget').textContent=this.value">
-          <span class="temp-value"><span id="hotendSliderVal">200</span>°C</span>
+    </section>
+
+    <aside class="control-panel">
+      <section class="story">
+        <h1 id="storyTitle">La table s'eveille</h1>
+        <p id="storyText">Chaque vase garde une orientation. Les visiteurs liberent les plateaux un par un, puis la machine compose un mouvement commun en fin d'heure.</p>
+      </section>
+
+      <section class="selected">
+        <div class="selected-row">
+          <div class="selected-title">
+            <span>Plateau actif</span>
+            <strong id="selectedName">Plateau 1</strong>
+          </div>
+          <div class="system"><span id="selectedState">disponible</span></div>
         </div>
-      </div>
-    </div>
-  </section>
+        <div class="speed" aria-label="Vitesse">
+          <button id="speed-slow" onclick="setSpeed('slow')">lent</button>
+          <button id="speed-medium" class="active" onclick="setSpeed('medium')">mesure</button>
+          <button id="speed-fast" onclick="setSpeed('fast')">vif</button>
+        </div>
+      </section>
 
-  <div class="divider"></div>
+      <section class="move-grid" aria-label="Commandes plateau">
+        <button onclick="rotateSelected(-90)" id="backBtn"><strong>-90</strong><span>retour</span></button>
+        <button onclick="rotateSelected(90)" id="forwardBtn"><strong>+90</strong><span>quart de tour</span></button>
+        <button onclick="rotateSelected(180)" id="halfBtn"><strong>180</strong><span>demi-tour</span></button>
+        <button onclick="pulseSelected()" id="pulseBtn"><strong>on</strong><span>maintien moteur</span></button>
+      </section>
 
-  <!-- Ventilateurs -->
-  <section>
-    <div class="section-label">Ventilateurs</div>
-    <div class="toggle-grid">
-      <button class="toggle-btn" data-type="fan" data-id="1" onclick="toggleFan(1)">
-        <span class="btn-label">Ventilateur</span>
-        <span class="btn-value">FAN 1</span>
-        <span class="btn-state">off</span>
+      <button class="final-btn" id="finalBtn" onclick="runFinale()" disabled>
+        <span>Final</span>
+        <strong>Les quatre plateaux ensemble</strong>
       </button>
-      <button class="toggle-btn" data-type="fan" data-id="2" onclick="toggleFan(2)">
-        <span class="btn-label">Ventilateur</span>
-        <span class="btn-value">FAN 2</span>
-        <span class="btn-state">off</span>
-      </button>
+    </aside>
+  </main>
+
+  <footer class="footer">
+    <div class="timeline" aria-hidden="true">
+      <div class="act"><span id="actFill1"></span></div>
+      <div class="act"><span id="actFill2"></span></div>
+      <div class="act"><span id="actFill3"></span></div>
+      <div class="act"><span id="actFill4"></span></div>
     </div>
-  </section>
-
-  <div class="divider"></div>
-
-  <!-- Chorégraphies -->
-  <section>
-    <div class="section-label">Chorégraphies</div>
-    <div class="choreo-grid" id="choreoGrid"></div>
-    <button class="stop-btn" id="stopBtn" onclick="stopAll()">
-      Arrêt d'urgence — tout stopper
-    </button>
-  </section>
-
-  <!-- Admin toggle -->
-  <div class="admin-toggle">
-    <button onclick="toggleAdmin()">· Admin ·</button>
-  </div>
-
-  <!-- Admin panel -->
-  <div class="admin-panel" id="adminPanel">
-    <div class="section-label">G-code manuel</div>
-    <div class="admin-input">
-      <input type="text" id="gcodeInput" placeholder="ex: G28 X Y" autocomplete="off" autocorrect="off">
-      <button onclick="sendGcode()">Envoyer</button>
-    </div>
-  </div>
-
+    <button class="stop-btn" onclick="stopAll()">Arret</button>
+  </footer>
 </div>
 
-<!-- Toast -->
+<section class="dev-panel" id="devPanel" hidden aria-label="Controle developpement du scenario">
+  <div class="dev-head">
+    <span>Scenario dev</span>
+    <strong class="dev-minute" id="devMinuteLabel">horloge</strong>
+  </div>
+  <div class="dev-controls">
+    <button onclick="stepDevMinute(-1)" aria-label="Minute precedente">-</button>
+    <input id="devMinuteRange" type="range" min="0" max="59" value="0" oninput="setDevMinute(parseInt(this.value, 10))">
+    <button onclick="stepDevMinute(1)" aria-label="Minute suivante">+</button>
+  </div>
+  <div class="dev-actions">
+    <button onclick="setDevMinute(0)">I</button>
+    <button onclick="setDevMinute(15)">II</button>
+    <button onclick="setDevMinute(30)">III</button>
+    <button onclick="setDevMinute(45)">IV</button>
+    <button class="dev-reset" onclick="clearDevMinute()">Reprendre l'horloge</button>
+  </div>
+</section>
+
 <div class="toast" id="toast"></div>
 
-<!-- =============================================
-     LOGIQUE
-============================================= -->
 <script>
-// --- Etat local ---
-const state = {
-  motors:  { 1: false, 2: false, 3: false, 4: false },
-  fans:    { 1: false, 2: false },
-  bed:     false,
-  hotend:  false,
-  playing: null,
-  adminUnlocked: false,
+const CONFIG = {
+  API_URL: "",
+  STATUS_INTERVAL: 5000,
+  PULSE_MS: 900,
+  PLATEAUS: {
+    1: { name: "Plateau 1", color: "var(--clay)" },
+    2: { name: "Plateau 2", color: "var(--leaf)" },
+    3: { name: "Plateau 3", color: "var(--blue)" },
+    4: { name: "Plateau 4", color: "var(--violet)" },
+  },
+  ACTS: [
+    {
+      from: 0, to: 14, unlocked: [1],
+      label: "Acte I",
+      title: "La table s'eveille",
+      text: "Un seul vase prend la parole. Le quart de tour installe le rythme sans tout reveler."
+    },
+    {
+      from: 15, to: 29, unlocked: [1, 2],
+      label: "Acte II",
+      title: "Un echo apparait",
+      text: "Le second plateau repond au premier. Les visiteurs peuvent alterner lenteur et vitesse."
+    },
+    {
+      from: 30, to: 44, unlocked: [1, 2, 3],
+      label: "Acte III",
+      title: "La carte se deplace",
+      text: "Trois vases changent la lecture de la structure. La vue du dessus devient une partition."
+    },
+    {
+      from: 45, to: 59, unlocked: [1, 2, 3, 4],
+      label: "Acte IV",
+      title: "Le choeur final",
+      text: "Tous les plateaux sont disponibles. La derniere commande lance un mouvement commun."
+    }
+  ]
 };
 
-// --- API call ---
-async function api(endpoint, method = "POST", body = null) {
+const state = {
+  selected: 1,
+  speed: "medium",
+  connected: false,
+  demo: false,
+  devMinute: null,
+  rotations: { 1: 0, 2: 0, 3: 0, 4: 0 },
+  unlocked: [1],
+};
+
+async function api(endpoint, method = "POST", body = null, silent = false) {
   try {
     const opts = { method, headers: { "Content-Type": "application/json" } };
     if (body) opts.body = JSON.stringify(body);
-    const r = await fetch(CONFIG.API_URL + endpoint, opts);
-    const data = await r.json();
-    if (!r.ok || data.status === "error") {
-      toast(data.message || "Erreur API");
-      return null;
-    }
+    const res = await fetch(CONFIG.API_URL + endpoint, opts);
+    const data = await res.json();
+    if (!res.ok || data.status === "error") throw new Error(data.message || "Erreur API");
+    state.demo = false;
     return data;
-  } catch (e) {
-    toast("Erreur réseau");
+  } catch (err) {
+    state.demo = true;
+    if (!silent) toast("Mode demo local: " + err.message);
     return null;
   }
 }
 
-// --- Toast ---
 let toastTimer;
-function toast(msg) {
+function toast(message) {
   const el = document.getElementById("toast");
-  el.textContent = msg;
+  el.textContent = message;
   el.classList.add("show");
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => el.classList.remove("show"), 2200);
 }
 
-// --- Status poll ---
-async function pollStatus() {
-  const data = await api("/api/status", "GET");
-  const dot = document.getElementById("statusDot");
-  if (!data) { dot.className = "status-dot error"; return; }
-
-  dot.className = "status-dot " + (data.octoprint?.connected ? "connected" : "error");
-
-  const bed    = data.octoprint?.bed_temp ?? null;
-  const hotend = data.octoprint?.hotend_temp ?? null;
-
-  const bedEl    = document.getElementById("tempBed");
-  const hotendEl = document.getElementById("tempHotend");
-
-  bedEl.textContent    = bed    !== null ? bed + "°C"    : "—";
-  hotendEl.textContent = hotend !== null ? hotend + "°C" : "—";
-
-  bedEl.className    = "temp-bar-val" + (bed    > 40  ? " hot" : "");
-  hotendEl.className = "temp-bar-val" + (hotend > 100 ? " hot" : "");
+function currentMinute() {
+  if (state.devMinute !== null) return state.devMinute;
+  return new Date().getMinutes();
 }
 
-// --- Moteurs ---
-function toggleMotor(id) {
-  state.motors[id] = !state.motors[id];
-  const action = state.motors[id] ? "on" : "off";
-  api(`/api/motor/${id}/${action}`).then(r => {
-    if (!r) { state.motors[id] = !state.motors[id]; return; }
-    updateMotorBtn(id);
-    toast(`Moteur ${id} — ${action.toUpperCase()}`);
+function currentAct(minute) {
+  return CONFIG.ACTS.find(act => minute >= act.from && minute <= act.to) || CONFIG.ACTS[0];
+}
+
+function updateScenario() {
+  const minute = currentMinute();
+  const act = currentAct(minute);
+  state.unlocked = act.unlocked.slice();
+
+  document.getElementById("minuteNow").textContent = String(minute).padStart(2, "0");
+  document.getElementById("actLabel").textContent = act.label;
+  document.getElementById("storyTitle").textContent = act.title;
+  document.getElementById("storyText").textContent = act.text;
+  document.getElementById("hourFill").style.width = ((minute + 1) / 60 * 100) + "%";
+
+  [1, 2, 3, 4].forEach(id => {
+    const el = document.getElementById(`plateau-${id}`);
+    el.disabled = !state.unlocked.includes(id);
+  });
+
+  if (!state.unlocked.includes(state.selected)) {
+    selectPlateau(state.unlocked[0]);
+  }
+
+  updateActBars(minute);
+  updateControls();
+  updateDevPanel();
+}
+
+function isDevMode() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get("dev") === "1" || ["127.0.0.1", "localhost"].includes(window.location.hostname);
+}
+
+function initDevPanel() {
+  const panel = document.getElementById("devPanel");
+  if (!isDevMode()) return;
+  panel.hidden = false;
+  updateDevPanel();
+}
+
+function updateDevPanel() {
+  const panel = document.getElementById("devPanel");
+  if (panel.hidden) return;
+  const minute = currentMinute();
+  document.getElementById("devMinuteRange").value = minute;
+  document.getElementById("devMinuteLabel").textContent =
+    state.devMinute === null ? `horloge ${String(minute).padStart(2, "0")}` : `minute ${String(minute).padStart(2, "0")}`;
+}
+
+function setDevMinute(minute) {
+  state.devMinute = Math.max(0, Math.min(59, minute));
+  updateScenario();
+}
+
+function stepDevMinute(delta) {
+  const base = state.devMinute === null ? currentMinute() : state.devMinute;
+  setDevMinute((base + delta + 60) % 60);
+}
+
+function clearDevMinute() {
+  state.devMinute = null;
+  updateScenario();
+}
+
+function updateActBars(minute) {
+  CONFIG.ACTS.forEach((act, idx) => {
+    const el = document.getElementById(`actFill${idx + 1}`);
+    let pct = 0;
+    if (minute > act.to) pct = 100;
+    else if (minute >= act.from) pct = ((minute - act.from + 1) / (act.to - act.from + 1)) * 100;
+    el.style.width = pct + "%";
   });
 }
 
-function updateMotorBtn(id) {
-  const btn = document.querySelector(`.toggle-btn[data-type="motor"][data-id="${id}"]`);
-  if (!btn) return;
-  const on = state.motors[id];
-  btn.classList.toggle("active", on);
-  btn.querySelector(".btn-state").textContent = on ? "on" : "off";
-}
-
-// --- Chauffe ---
-function toggleHeat(type) {
-  const isOn = type === "bed" ? state.bed : state.hotend;
-  const newState = !isOn;
-  const action = newState ? "on" : "off";
-  const body = newState ? { temp: getTemp(type) } : null;
-
-  api(`/api/${type}/${action}`, "POST", body).then(r => {
-    if (!r) return;
-    if (type === "bed") state.bed = newState;
-    else state.hotend = newState;
-    updateHeatCard(type);
-    toast(`${type === "bed" ? "Plateau" : "Tête"} — ${action.toUpperCase()}`);
-  });
-}
-
-function getTemp(type) {
-  return parseInt(document.getElementById(type === "bed" ? "bedSlider" : "hotendSlider").value);
-}
-
-function updateHeatCard(type) {
-  const card      = document.getElementById(type === "bed" ? "bedCard" : "hotendCard");
-  const stateLabel = document.getElementById(type === "bed" ? "bedStateLabel" : "hotendStateLabel");
-  const on         = type === "bed" ? state.bed : state.hotend;
-  card.classList.toggle("active", on);
-  stateLabel.textContent = on ? "on" : "off";
-}
-
-// Sync sliders affichage
-document.getElementById("bedSlider").addEventListener("input", function() {
-  document.getElementById("bedSliderVal").textContent = this.value;
-  document.getElementById("bedTempTarget").textContent = this.value;
-});
-
-document.getElementById("hotendSlider").addEventListener("input", function() {
-  document.getElementById("hotendSliderVal").textContent = this.value;
-  document.getElementById("hotendTempTarget").textContent = this.value;
-});
-
-// --- Ventilateurs ---
-function toggleFan(id) {
-  state.fans[id] = !state.fans[id];
-  const action = state.fans[id] ? "on" : "off";
-  api(`/api/fan/${id}/${action}`).then(r => {
-    if (!r) { state.fans[id] = !state.fans[id]; return; }
-    updateFanBtn(id);
-    toast(`Ventilateur ${id} — ${action.toUpperCase()}`);
-  });
-}
-
-function updateFanBtn(id) {
-  const btn = document.querySelector(`.toggle-btn[data-type="fan"][data-id="${id}"]`);
-  if (!btn) return;
-  const on = state.fans[id];
-  btn.classList.toggle("active", on);
-  btn.querySelector(".btn-state").textContent = on ? "on" : "off";
-}
-
-// --- Chorégraphies ---
-function buildChoreoGrid() {
-  const grid = document.getElementById("choreoGrid");
-  grid.innerHTML = CONFIG.CHOREO_NAMES.map((name, i) => `
-    <button class="choreo-btn" id="choreo-${i+1}" onclick="runChoreo(${i+1})">
-      <div class="choreo-num">0${i+1}</div>
-      <div class="choreo-name">${name}</div>
-      <div class="choreo-status">—</div>
-    </button>
-  `).join("");
-}
-
-function runChoreo(id) {
-  if (state.playing) {
-    toast("Choreographie deja en cours");
+function selectPlateau(id) {
+  if (!state.unlocked.includes(id)) {
+    toast(`Plateau ${id} pas encore disponible`);
     return;
   }
-  api(`/api/choreo/run/${id}`).then(r => {
-    if (!r) return;
-    state.playing = id;
-    document.querySelectorAll(".choreo-btn").forEach(b => {
-      b.classList.remove("playing");
-      b.querySelector(".choreo-status").textContent = "—";
-    });
-    const btn = document.getElementById(`choreo-${id}`);
-    if (btn) {
-      btn.classList.add("playing");
-      btn.querySelector(".choreo-status").textContent = "en cours";
-    }
-    document.getElementById("stopBtn").classList.add("urgent");
-    toast(`Chorégraphie ${id} lancée`);
+  state.selected = id;
+  updateControls();
+}
+
+function setSpeed(speed) {
+  state.speed = speed;
+  ["slow", "medium", "fast"].forEach(key => {
+    document.getElementById(`speed-${key}`).classList.toggle("active", key === speed);
   });
+}
+
+function updateControls() {
+  const selected = state.selected;
+  const available = state.unlocked.includes(selected);
+  document.getElementById("selectedName").textContent = CONFIG.PLATEAUS[selected].name;
+  document.getElementById("selectedState").textContent = available ? "disponible" : "verrouille";
+  document.getElementById("finalBtn").disabled = state.unlocked.length < 4;
+  ["backBtn", "forwardBtn", "halfBtn", "pulseBtn"].forEach(id => {
+    document.getElementById(id).disabled = !available;
+  });
+  [1, 2, 3, 4].forEach(id => {
+    document.getElementById(`plateau-${id}`).style.outline =
+      id === selected ? "3px solid oklch(18% 0.018 80 / 0.42)" : "0";
+  });
+}
+
+async function rotateSelected(angle) {
+  const id = state.selected;
+  if (!state.unlocked.includes(id)) return;
+  state.rotations[id] += angle;
+  paintRotation(id);
+  const result = await api(`/api/plateau/${id}/rotate`, "POST", { angle, speed: state.speed });
+  if (result) toast(`${CONFIG.PLATEAUS[id].name}: ${angle} degres`);
+}
+
+async function pulseSelected() {
+  const id = state.selected;
+  if (!state.unlocked.includes(id)) return;
+  const ok = await api(`/api/motor/${id}/on`);
+  if (ok) toast(`${CONFIG.PLATEAUS[id].name}: maintien`);
+  setTimeout(() => api(`/api/motor/${id}/off`), CONFIG.PULSE_MS);
+}
+
+function paintRotation(id) {
+  document.getElementById(`plateau-${id}`).style.setProperty("--rot", `${state.rotations[id]}deg`);
+}
+
+async function runFinale() {
+  if (state.unlocked.length < 4) return;
+  toast("Final: mouvement commun");
+  for (const id of [1, 2, 3, 4]) {
+    state.rotations[id] += id % 2 === 0 ? -180 : 180;
+    paintRotation(id);
+    api(`/api/plateau/${id}/rotate`, "POST", {
+      angle: id % 2 === 0 ? -180 : 180,
+      speed: "fast"
+    });
+    await wait(160);
+  }
 }
 
 async function stopAll() {
   await api("/api/choreo/stop");
-  state.playing = null;
-  state.motors  = { 1: false, 2: false, 3: false, 4: false };
-  state.fans    = { 1: false, 2: false };
-  state.bed     = false;
-  state.hotend  = false;
-  [1,2,3,4].forEach(updateMotorBtn);
-  [1,2].forEach(updateFanBtn);
-  updateHeatCard("bed");
-  updateHeatCard("hotend");
-  document.querySelectorAll(".choreo-btn").forEach(b => {
-    b.classList.remove("playing");
-    b.querySelector(".choreo-status").textContent = "—";
-  });
-  document.getElementById("stopBtn").classList.remove("urgent");
-  toast("Tout arrêté");
+  toast("Arret envoye");
 }
 
-// --- Admin ---
-function toggleAdmin() {
-  if (!state.adminUnlocked) {
-    const pwd = prompt("Mot de passe admin :");
-    if (pwd !== CONFIG.ADMIN_PASSWORD) { toast("Mot de passe incorrect"); return; }
-    state.adminUnlocked = true;
+function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function pollStatus() {
+  const data = await api("/api/status", "GET", null, true);
+  const dot = document.getElementById("statusDot");
+  const label = document.getElementById("statusLabel");
+  if (!data) {
+    dot.className = "dot error";
+    label.textContent = "Demo";
+    return;
   }
-  const panel = document.getElementById("adminPanel");
-  panel.classList.toggle("visible");
+  state.connected = !!data.octoprint?.connected;
+  dot.className = "dot " + (state.connected ? "connected" : "error");
+  label.textContent = state.connected ? "En ligne" : "OctoPrint";
 }
 
-async function sendGcode() {
-  const input = document.getElementById("gcodeInput");
-  const cmd = input.value.trim();
-  if (!cmd) return;
-  const r = await api("/api/gcode", "POST", { command: cmd });
-  if (r) { toast("G-code envoyé"); input.value = ""; }
-}
-
-// --- Init ---
-buildChoreoGrid();
+updateScenario();
+initDevPanel();
+setSpeed(state.speed);
 pollStatus();
+setInterval(updateScenario, 15000);
 setInterval(pollStatus, CONFIG.STATUS_INTERVAL);
 </script>
-
 </body>
 </html>

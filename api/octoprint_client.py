@@ -54,6 +54,12 @@ class OctoPrintClient:
         print(f"[OctoPrint] G-code -> {command}")
         return self._post("/api/printer/command", {"command": command})
 
+    # --- Envoi de plusieurs commandes G-code ---
+    def send_gcode_commands(self, commands):
+        clean = [str(cmd).strip() for cmd in commands if str(cmd).strip()]
+        print(f"[OctoPrint] G-code batch -> {clean}")
+        return self._post("/api/printer/command", {"commands": clean})
+
     # --- Upload et lancement d'un fichier G-code ---
     def upload_and_print(self, filepath):
         filename = os.path.basename(filepath)

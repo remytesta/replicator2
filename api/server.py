@@ -58,6 +58,20 @@ def status():
 
 MOTOR_AXES = {"1": "X", "2": "Y", "3": "Z", "4": "E"}
 
+PLATEAU_SPEEDS = {
+    "slow": 450,
+    "medium": 900,
+    "fast": 1500,
+}
+
+def plateau_units_per_90(plateau_id):
+    raw = os.environ.get(f"PLATEAU_{plateau_id}_UNITS_PER_90", "10")
+    try:
+        value = float(raw)
+    except ValueError:
+        value = 10.0
+    return max(value, 0.01)
+
 @app.route("/api/motor/<motor_id>/<action>", methods=["POST"])
 def motor(motor_id, action):
     axis = MOTOR_AXES.get(motor_id)
@@ -70,6 +84,47 @@ def motor(motor_id, action):
     result = octo.send_gcode(cmd)
     if result:
         return ok(f"Moteur {motor_id} ({axis}) -> {action.upper()}")
+    return err("Erreur communication OctoPrint")
+
+@app.route("/api/plateau/<plateau_id>/rotate", methods=["POST"])
+def plateau_rotate(plateau_id):
+    axis = MOTOR_AXES.get(plateau_id)
+    if not axis:
+        return err(f"Plateau {plateau_id} inconnu. Valeurs : 1, 2, 3, 4")
+
+    data = request.get_json(silent=True) or {}
+    try:
+        angle = int(data.get("angle", 90))
+    except (TypeError, ValueError):
+        return err("Angle invalide", 400)
+
+    if angle not in (-180, -90, 90, 180):
+        return err("Angle invalide. Valeurs : -180, -90, 90, 180", 400)
+
+    speed_key = str(data.get("speed", "medium"))
+    feedrate = PLATEAU_SPEEDS.get(speed_key)
+    if feedrate is None:
+        return err("Vitesse invalide. Valeurs : slow, medium, fast", 400)
+
+    units = plateau_units_per_90(plateau_id)
+    delta = round((angle / 90) * units, 4)
+
+    if axis == "E":
+        commands = ["M83", f"G1 E{delta} F{feedrate}", "M82"]
+    else:
+        commands = ["G91", f"G1 {axis}{delta} F{feedrate}", "G90"]
+
+    result = octo.send_gcode_commands(commands)
+    if result:
+        return jsonify({
+            "status": "ok",
+            "message": f"Plateau {plateau_id} -> {angle} degres",
+            "axis": axis,
+            "angle": angle,
+            "speed": speed_key,
+            "feedrate": feedrate,
+            "units": delta,
+        })
     return err("Erreur communication OctoPrint")
 
 # =============================================================
