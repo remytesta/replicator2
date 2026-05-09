@@ -1,8 +1,20 @@
-const CACHE = 'replicator2-v1'
+const CACHE = 'replicator2-v4'
 const FILES = [
   '/',
   '/index.html',
-  '/manifest.json'
+  '/manifest.json',
+  '/styles.css',
+  '/app.js',
+  '/vases-data.js',
+  '/vase/vase_illustration.png',
+  '/vase/vase_argent_002.png',
+  '/vase/vase_boulouris_001.png',
+  '/vase/vase_bronze_005.png',
+  '/vase/vase_maquette_007.png',
+  '/vase/vase_MNS_v1_008.png',
+  '/vase/vase_MNS_v2_006.png',
+  '/vase/vase_or_004.png',
+  '/vase/vase_poeme_003.png'
 ]
 
 self.addEventListener('install', e => {
