@@ -39,6 +39,256 @@ Le hotspot WiFi et la modification de l'ecran integre viennent apres.
 
 ---
 
+## Runbook atelier valide le 9 mai 2026
+
+Cette section resume ce qui a ete fait pendant la mise en route de la branche `museal` sur le Raspberry.
+
+### Recuperer la PWA museale
+
+Sur le Raspberry, le dossier servi par Nginx doit etre :
+
+```text
+/home/flt/replicator2/app
+```
+
+Verifier le root Nginx :
+
+```bash
+sudo nginx -T | grep "root"
+```
+
+Le resultat attendu :
+
+```text
+root /home/flt/replicator2/app;
+```
+
+Si `/home/flt/replicator2` n'est pas un repo Git ou si `git pull` dit `not a git repository`, remplacer proprement le dossier par le clone Git :
+
+```bash
+cd /home/flt
+mv replicator2 replicator2_old
+git clone -b museal https://github.com/remytesta/replicator2.git replicator2
+sudo systemctl restart nginx
+```
+
+Verifier que la nouvelle PWA est bien servie :
+
+```bash
+grep "vases-data.js" /home/flt/replicator2/app/index.html
+curl -s http://localhost/index.html | grep "vases-data.js"
+```
+
+Les deux commandes doivent afficher :
+
+```html
+<script src="vases-data.js"></script>
+```
+
+### Ancienne app encore affichee
+
+La nouvelle PWA est dans `index.html`, mais l'ancien fichier `replicator2.html` peut encore etre appele par un vieux raccourci ou par Chromium. Sur la branche `museal`, `replicator2.html` redirige maintenant vers :
+
+```text
+/index.html?v=12
+```
+
+Verifier :
+
+```bash
+curl -s http://localhost/replicator2.html | grep "index.html?v=12"
+```
+
+Si l'ancienne app reste visible alors que `curl` sert bien la nouvelle PWA, vider le profil Chromium et redemarrer le kiosk :
+
+```bash
+sudo systemctl stop replicator-kiosk
+rm -rf /home/flt/.cache/chromium
+rm -rf /home/flt/.config/chromium
+sudo systemctl start replicator-kiosk
+```
+
+### Service kiosk ecran tactile
+
+Le service qui lance Chromium est :
+
+```bash
+sudo systemctl status replicator-kiosk --no-pager
+sudo systemctl cat replicator-kiosk.service
+```
+
+Il lance :
+
+```text
+/home/flt/.xinitrc
+```
+
+Version fonctionnelle de `/home/flt/.xinitrc` pour l'ecran Waveshare en portrait `left`, sans Google Translate :
+
+```bash
+xset s off
+xset -dpms
+xset s noblank
+xrandr -o left
+xinput set-prop "WaveShare WS170120" "Coordinate Transformation Matrix" 0 -1 1 1 0 0 0 0 1
+unclutter -idle 0.2 &
+openbox-session &
+chromium --kiosk \
+  --user-data-dir=/home/flt/.config/chromium \
+  --no-first-run \
+  --no-default-browser-check \
+  --noerrdialogs \
+  --disable-infobars \
+  --disable-session-crashed-bubble \
+  --disable-translate \
+  --disable-features=Translate,TranslateUI \
+  --lang=fr-FR \
+  --accept-lang=fr-FR \
+  http://localhost/index.html?v=103
+```
+
+Redemarrer seulement le kiosk :
+
+```bash
+sudo systemctl restart replicator-kiosk
+```
+
+Si `xinput` manque :
+
+```bash
+sudo apt update
+sudo apt install -y xinput
+```
+
+Identifier l'ecran tactile :
+
+```bash
+DISPLAY=:0 xinput list
+```
+
+Sur le prototype teste, le nom etait :
+
+```text
+WaveShare WS170120
+```
+
+### API Flask apres remplacement du dossier
+
+Si on remplace `/home/flt/replicator2` par un clone Git, le virtualenv Python peut disparaitre. Symptome :
+
+```text
+replicator-api.service: Unable to locate executable '/home/flt/replicator2/venv/bin/python'
+```
+
+Recreer le virtualenv :
+
+```bash
+cd /home/flt/replicator2
+python3 -m venv venv
+./venv/bin/pip install flask flask-cors requests
+sudo systemctl restart replicator-api
+```
+
+Verifier :
+
+```bash
+sudo systemctl status replicator-api --no-pager
+curl -s http://localhost:8080/api/status
+curl -s http://localhost/api/status
+```
+
+Si `http://localhost/api/status` renvoie `502 Bad Gateway`, l'API Flask ne tourne pas ou plante.
+
+### OctoPrint et G-code
+
+Les G-code ne marchent que si OctoPrint tourne ET si l'imprimante est connectee dans OctoPrint.
+
+Verifier OctoPrint :
+
+```bash
+sudo systemctl status octoprint --no-pager
+```
+
+Verifier que l'imprimante est vue en USB :
+
+```bash
+ls -l /dev/ttyUSB* /dev/ttyACM* 2>/dev/null
+```
+
+Sur le prototype teste, le bon port etait :
+
+```text
+/dev/ttyUSB0
+```
+
+Ouvrir OctoPrint depuis un appareil sur le meme reseau Ethernet que le Raspberry :
+
+```bash
+hostname -I
+```
+
+Puis dans le navigateur :
+
+```text
+http://ADRESSE_IP_DU_RASPBERRY:5000
+```
+
+Dans OctoPrint, panneau `Connection` :
+
+```text
+Serial Port: /dev/ttyUSB0
+Baudrate: 115200
+```
+
+Si `115200` ne marche pas, essayer `250000`.
+
+Quand OctoPrint affiche `Operational`, verifier :
+
+```bash
+curl -s http://localhost/api/status
+```
+
+On veut voir :
+
+```json
+"connected": true
+```
+
+Tester une choregraphie :
+
+```bash
+curl -s -X POST http://localhost/api/choreo/run/1
+```
+
+### Services utiles
+
+```bash
+sudo systemctl restart nginx
+sudo systemctl restart replicator-api
+sudo systemctl restart replicator-kiosk
+sudo systemctl restart octoprint
+```
+
+Logs utiles :
+
+```bash
+sudo journalctl -u replicator-api -n 80 --no-pager
+sudo journalctl -u replicator-kiosk -n 80 --no-pager
+sudo journalctl -u octoprint -n 80 --no-pager
+```
+
+### Probleme rencontre
+
+Le blocage final venait du fait que l'imprimante n'etait pas connectee au bon port USB / pas reconnectee dans OctoPrint. Le Raspberry voyait bien :
+
+```text
+/dev/ttyUSB0
+```
+
+mais OctoPrint indiquait `Printer is not operational`. Il a fallu ouvrir OctoPrint et connecter l'imprimante sur `/dev/ttyUSB0`.
+
+---
+
 ## Installer Git sur le Mac de l'atelier
 
 Sur le Mac, ouvrir Terminal.
