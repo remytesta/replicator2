@@ -128,7 +128,7 @@ function buildSketch() {
   `).join("") + `
     <button
       class="sketch-hotspot sketch-hotspot-console"
-      style="${hotspotStyle({ pxX: 1210, pxY: 630 }, vases.length)}"
+      style="${hotspotStyle({ pxX: 1210, pxY: 700 }, vases.length)}"
       type="button"
       id="consoleBtn"
       aria-label="Ouvrir la console machine"

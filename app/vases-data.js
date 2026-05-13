@@ -10,7 +10,7 @@ window.REPLICATOR_VASES = [
     physicalState: "Rotation respirante",
     detailAction: "Premier clic: le vase pulse puis tourne avec acceleration progressive et ralentissement. Deuxieme clic: rotation stable, plus lente, pendant la lecture du diaporama.",
     hardware: "Moteur pas a pas X",
-    hotspot: { pxX: 1690, pxY: 575 },
+    hotspot: { pxX: 1690, pxY: 610 },
     sketchImage: "main/png/maquette-croquis.png",
     gcodeHook: null,
     slides: [
@@ -62,7 +62,7 @@ window.REPLICATOR_VASES = [
     physicalState: "Double rotation synchronisee",
     detailAction: "Premier clic: les deux vases s'animent ensemble. Dans le diaporama, chaque page declenche un tour complet; a la fin, une signature s'arrete pendant que le double tourne encore.",
     hardware: "Deux moteurs pas a pas Z couples",
-    hotspot: { pxX: 1200, pxY: 555 },
+    hotspot: { pxX: 1200, pxY: 630 },
     sketchImage: "main/png/mns-creps-croquis.png",
     gcodeHook: null,
     slides: [
@@ -129,7 +129,7 @@ window.REPLICATOR_VASES = [
     physicalState: "Ventilateur puis agitation variable",
     detailAction: "Premier clic: le ventilateur met les grains de sable en mouvement. Deuxieme clic: le vase alterne gauche et droite avec des vitesses variables, comme s'il evitait les grains.",
     hardware: "Moteur pas a pas Y et ventilateur n.1",
-    hotspot: { pxX: 792, pxY: 255},
+    hotspot: { pxX: 792, pxY: 200},
     sketchImage: "main/png/asa-croquis.png",
     gcodeHook: null,
     slides: [
@@ -156,7 +156,7 @@ window.REPLICATOR_VASES = [
     physicalState: "Buee, chauffage, ventilation",
     detailAction: "Premier clic: le groupe pulse et un voile apparait. Deuxieme clic et parcours du diaporama: le plateau refroidit, le ventilateur expulse l'humidite, la buee disparait progressivement.",
     hardware: "Plateau chauffant, thermistance, ventilateur n.2",
-    hotspot: { pxX: 927, pxY: 475 },
+    hotspot: { pxX: 927, pxY: 425 },
     sketchImage: "main/png/podium-croquis.png",
     gcodeHook: null,
     slides: [
@@ -183,7 +183,7 @@ window.REPLICATOR_VASES = [
     physicalState: "Rotation lente et retenue",
     detailAction: "Premier clic: le vase se tourne presque timidement. Deuxieme clic: la lecture se poursuit avec une transcription et des vues de face et de revers.",
     hardware: "Moteur pas a pas E, corps chauffant et thermistance",
-    hotspot: { pxX: 260, pxY: 282 },
+    hotspot: { pxX: 250, pxY: 210 },
     sketchImage: "main/png/poene-croquiss.png",
     gcodeHook: null,
     slides: [
