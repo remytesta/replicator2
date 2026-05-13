@@ -21,6 +21,9 @@ Thumbs.db
 *.log
 logs/
 
+# Assets trop lourds pour GitHub
+app/diapo/vase-podium/teaser-vase-podium-1.mp4
+
 # Node (si on ajoute un build tool plus tard)
 node_modules/
 dist/

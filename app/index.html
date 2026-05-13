@@ -3,69 +3,40 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <meta name="theme-color" content="#171511">
+  <meta name="theme-color" content="#f4efe4">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Replicator 2</title>
-  <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="manifest" href="manifest.json?v=14">
+  <link rel="stylesheet" href="styles.css?v=14">
 </head>
 <body>
   <main class="app-shell" id="app">
     <div class="stage-transition" id="stageTransition" aria-hidden="true"></div>
 
     <section class="screen screen-home is-active" id="homeScreen" aria-labelledby="homeTitle">
-      <button class="nav-action nav-action-home" id="enterChapelBtn" type="button">
-        Acceder a la chapelle
-      </button>
-
-      <div class="home-composition">
-        <div class="home-image-wrap" id="homeImageWrap"></div>
-        <div class="home-copy">
-          <p class="kicker">Installation interactive</p>
-          <h1 id="homeTitle">Replicator 2</h1>
-          <p class="home-subtitle">Carte vivante, vases en rotation, choregraphies programmees.</p>
+      <h1 class="sr-only" id="homeTitle">Replicator 2</h1>
+      <div class="sketch-stage" id="sketchStage" aria-label="Dessin interactif Replicator 2">
+        <div class="sketch-title" aria-hidden="true">Replicator 2</div>
+        <div class="sketch-art">
+          <div class="sketch-container">
+            <img class="sketch-base" src="main/png/main-croquis.png" alt="Croquis de l'installation Replicator 2">
+            <div class="sketch-hotspots" id="sketchHotspots"></div>
+          </div>
         </div>
       </div>
-    </section>
-
-    <section class="screen screen-chapel" id="chapelScreen" aria-labelledby="chapelTitle">
-      <header class="topbar">
-        <div>
-          <p class="kicker">Plan de la chapelle</p>
-          <h2 id="chapelTitle">Replicator 2</h2>
-        </div>
-        <button class="nav-action" id="chapelHomeBtn" type="button">Chapelle</button>
-      </header>
-
-      <div class="chapel-map" id="chapelMap" aria-label="Carte interactive des vases">
-        <div class="chapel-floor">
-          <div class="altar">
-            <span class="altar-table"></span>
-            <span class="altar-cross"></span>
-            <span class="altar-label">Autel</span>
-          </div>
-          <div class="nave nave-main"></div>
-          <div class="nave nave-left"></div>
-          <div class="nave nave-right"></div>
-          <div class="raspberry-node" aria-label="Raspberry Pi central">
-            <span></span>
-            <strong>Pi</strong>
-          </div>
-          <div class="plateau-layer" id="plateauLayer"></div>
-        </div>
-      </div>
-
-      <button class="console-fab" id="consoleBtn" type="button">Console</button>
+      <aside class="scenario-sheet" id="scenarioSheet" aria-live="polite"></aside>
     </section>
 
     <section class="screen screen-console" id="consoleScreen" aria-labelledby="consoleTitle">
       <header class="topbar">
         <div>
-          <p class="kicker">Tablette physique</p>
+          <p class="kicker">Machine</p>
           <h2 id="consoleTitle">Console</h2>
         </div>
-        <button class="nav-action" data-route="chapel" type="button">Chapelle</button>
+        <button class="nav-action icon-action" data-route="home" type="button" aria-label="Retour au croquis">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
       </header>
 
       <div class="console-panel">
@@ -78,19 +49,20 @@
 
     <section class="screen screen-vase" id="vaseScreen" aria-labelledby="vaseTitle">
       <header class="topbar">
-        <div>
-          <p class="kicker" id="vaseCount">Vase</p>
-          <h2 id="vaseTitle">Vase</h2>
+        <div class="vase-heading">
+          <img class="vase-heading-thumb" id="vaseSketchThumb" alt="">
+          <div>
+            <p class="kicker" id="vaseCount">Vase</p>
+            <h2 id="vaseTitle">Vase</h2>
+          </div>
         </div>
-        <button class="nav-action" data-route="chapel" type="button">Chapelle</button>
+        <button class="nav-action icon-action" data-route="home" type="button" aria-label="Retour au croquis">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
       </header>
 
       <div class="vase-detail">
         <div class="vase-media" id="vaseMedia"></div>
-        <article class="vase-copy">
-          <p class="slide-label" id="slideLabel">Face</p>
-          <p id="vaseDescription"></p>
-        </article>
       </div>
 
       <div class="slider-controls">
@@ -104,12 +76,34 @@
       </div>
 
       <nav class="vase-nav" id="vaseNav" aria-label="Changer de vase"></nav>
-    </section>
 
+      <article class="vase-copy">
+        <img class="vase-copy-thumb" id="vaseCopyThumb" alt="">
+        <div>
+          <p class="slide-label" id="slideLabel">Face</p>
+          <p class="slide-caption" id="slideCaption"></p>
+          <p id="vaseDescription"></p>
+        </div>
+      </article>
+    </section>
+    <div class="coord-debug" id="coordDebug" aria-live="polite"></div>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
   </main>
 
-  <script src="vases-data.js"></script>
-  <script src="app.js"></script>
+  <script src="vases-data.js?v=14"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.getRegistrations()
+        .then(registrations => Promise.all(registrations.map(registration => registration.unregister())))
+        .catch(() => {});
+    }
+
+    if ("caches" in window) {
+      caches.keys()
+        .then(keys => Promise.all(keys.map(key => caches.delete(key))))
+        .catch(() => {});
+    }
+  </script>
+  <script src="app.js?v=14"></script>
 </body>
 </html>

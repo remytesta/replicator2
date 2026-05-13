@@ -160,6 +160,21 @@ server {
     index index.html;
 
     # PWA
+    location = /sw.js {
+        add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" always;
+        try_files \\\$uri =404;
+    }
+
+    location = /manifest.json {
+        add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" always;
+        try_files \\\$uri =404;
+    }
+
+    location ~* \\\.(?:html|js|css)\\\$ {
+        add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" always;
+        try_files \\\$uri =404;
+    }
+
     location / {
         try_files \\\$uri \\\$uri/ /index.html;
     }
