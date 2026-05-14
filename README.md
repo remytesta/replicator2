@@ -9,6 +9,252 @@ Le but est que l'installation puisse fonctionner en local, sans internet, avec u
 
 ---
 
+## Urgence carte SD cassee Raspberry Pi
+
+Runbook complet pour repartir de zero apres casse ou corruption de la carte SD du Raspberry Pi.
+
+### 1. Refaire la carte SD
+
+Depuis un ordinateur, installer Raspberry Pi Imager puis flasher la carte SD avec :
+
+```text
+Raspberry Pi OS Lite 64-bit
+```
+
+Dans les options avancees de Raspberry Pi Imager :
+
+```text
+Hostname : replicator2
+User     : flt
+Password : choisir le mot de passe atelier
+SSH      : active
+WiFi     : reseau temporaire de l'atelier si besoin
+Locale   : France / clavier FR si necessaire
+```
+
+Important : le script `install.sh` attend l'utilisateur `flt` et installe le projet dans :
+
+```text
+/home/flt/replicator2
+```
+
+### 2. Premier demarrage
+
+1. Inserer la carte SD dans le Raspberry Pi.
+2. Brancher clavier/ecran ou se connecter en SSH.
+3. Verifier que la machine demarre et que l'utilisateur est bien `flt`.
+
+En SSH depuis un autre ordinateur :
+
+```bash
+ssh flt@replicator2.local
+```
+
+Si `replicator2.local` ne repond pas, chercher l'IP dans la box ou avec un scan reseau, puis :
+
+```bash
+ssh flt@ADRESSE_IP_DU_RASPBERRY
+```
+
+### 3. Installer les outils minimum
+
+Sur le Raspberry :
+
+```bash
+sudo apt update
+sudo apt install -y git curl
+```
+
+### 4. Recuperer le projet
+
+Cloner la branche de production actuelle :
+
+```bash
+cd /home/flt
+git clone -b main https://github.com/remytesta/replicator2.git replicator2
+cd /home/flt/replicator2
+```
+
+Si le dossier existe deja mais est incomplet ou casse :
+
+```bash
+cd /home/flt
+mv replicator2 replicator2_broken_$(date +%Y%m%d_%H%M%S)
+git clone -b main https://github.com/remytesta/replicator2.git replicator2
+cd /home/flt/replicator2
+```
+
+### 5. Lancer l'installation automatique
+
+Ne pas lancer le script avec `sudo`. Il demandera `sudo` seulement quand c'est necessaire.
+
+```bash
+cd /home/flt/replicator2
+bash install.sh
+```
+
+Le script installe notamment :
+
+```text
+Nginx
+API Flask Replicator
+dossier app/
+dossier gcode/
+services systemd
+hotspot local REPLICATOR2
+proxy /api/ vers Flask
+proxy /octoprint/ vers OctoPrint
+```
+
+### 6. Installer ou verifier OctoPrint
+
+Le script configure l'API Replicator pour parler a OctoPrint sur :
+
+```text
+http://127.0.0.1:5000
+```
+
+Si OctoPrint n'est pas encore installe sur la nouvelle carte SD, l'installer avant les tests machine. Une fois OctoPrint present :
+
+```bash
+sudo systemctl status octoprint --no-pager
+curl -s http://127.0.0.1:5000
+```
+
+Brancher ensuite la CR-10S en USB et verifier dans OctoPrint que l'imprimante est visible.
+
+### 7. Verifier les services Replicator
+
+```bash
+sudo systemctl status nginx --no-pager
+sudo systemctl status replicator-api --no-pager
+curl -I http://localhost/
+curl -s http://localhost/index.html | grep "app.js"
+```
+
+Verifier que les fichiers G-code sont presents :
+
+```bash
+ls -1 /home/flt/replicator2/gcode | head
+ls -1 /home/flt/replicator2/gcode | grep "choreo_global"
+```
+
+### 8. Ouvrir l'interface
+
+Depuis le Raspberry ou un appareil connecte au meme reseau :
+
+```text
+http://replicator2.local/
+```
+
+ou :
+
+```text
+http://ADRESSE_IP_DU_RASPBERRY/
+```
+
+Si le hotspot a ete active par `install.sh`, connecter la tablette au WiFi :
+
+```text
+SSID : REPLICATOR2
+Mot de passe : replicator2026
+IP attendue Raspberry : 10.0.0.1
+URL : http://10.0.0.1/
+```
+
+### 9. Mettre a jour plus tard
+
+Quand un nouveau commit est pousse en production :
+
+```bash
+cd /home/flt/replicator2
+git pull origin main
+bash install.sh
+sudo systemctl restart nginx
+sudo systemctl restart replicator-api
+```
+
+Si la tablette affiche encore l'ancienne interface, vider le cache du navigateur ou redemarrer le kiosk/Chromium.
+
+---
+
+## Runbook du 14 mai 2026
+
+Objectif du jour : reconstruire une version production de l'interface museale et preparer la reprise apres casse de carte SD.
+
+### Etat Git production
+
+Les branches `main` et `hostinger-deploy` pointent sur le meme commit de production :
+
+```text
+e95c2bd Update museal interface and gcode choreography hooks
+```
+
+Pour recuperer cette version sur le Raspberry :
+
+```bash
+cd /home/flt/replicator2
+git pull origin main
+```
+
+### Changements interface du jour
+
+- Page Chapelle : suppression du titre visible `Replicator 2`, hotspots plus sobres, label Maquette a gauche, bouton Console differencie.
+- Modale Chapelle : plus compacte, croix petite en haut a droite, CTA `Lancer la Choregraphie`.
+- Diaporamas : media en premier, images/videos en `cover`, bouton `Chapelle` compact en haut a droite, scenes visibles en footer, pas de pulsation scene.
+- Videos : boutons icones play/pause et son on/off, loader de chargement, pause et nettoyage quand on revient a Chapelle.
+- Console : historique G-code scrollable, 4 boutons de choregraphie fixes en bas en grille 2 colonnes.
+- Notifications debug G-code : petites, semi-transparentes, en haut a gauche, vert si G-code lance, rouge si erreur API/OctoPrint.
+
+### G-code du jour
+
+Des fichiers G-code nommes par mouvement ont ete ajoutes dans `gcode/`.
+
+Exemples :
+
+```text
+choreo_maquette_respiration.gcode
+choreo_maquette_rotation_lente.gcode
+choreo_mns_tour_complet.gcode
+choreo_mns_signature_finale.gcode
+choreo_asa_vent_sable.gcode
+choreo_asa_alternance.gcode
+choreo_podium_buee_disparition.gcode
+choreo_poeme_reveal_arriere.gcode
+choreo_global_meme_vitesse.gcode
+choreo_global_acceleration_effets_off.gcode
+choreo_global_cascade_fond_avant.gcode
+choreo_global_suspension_extinction.gcode
+```
+
+Verifier sur le Raspberry :
+
+```bash
+ls -1 /home/flt/replicator2/gcode/choreo_*.gcode | wc -l
+```
+
+### Test rapide apres reinstall
+
+```bash
+curl -I http://localhost/
+curl -s http://localhost/index.html | grep "vases-data.js"
+curl -s http://localhost/api/status
+sudo systemctl status replicator-api --no-pager
+sudo systemctl status nginx --no-pager
+```
+
+Si `curl -s http://localhost/api/status` renvoie une erreur OctoPrint, verifier d'abord :
+
+```bash
+sudo systemctl status octoprint --no-pager
+```
+
+### Point d'attention
+
+Les G-code sont des sequences de base a ajuster aux amplitudes reelles des moteurs et aux branchements effectifs. Avant ouverture publique, tester chaque fichier un par un avec la machine surveillee.
+
+---
+
 ## Ce qu'on fait today
 
 
