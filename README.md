@@ -106,6 +106,10 @@ proxy /api/ vers Flask
 proxy /octoprint/ vers OctoPrint
 ```
 
+La cle API OctoPrint n'est pas demandee pendant cette installation. C'est normal :
+elle n'existe qu'apres la premiere configuration d'OctoPrint. Le script cree le
+fichier `/etc/replicator2.env`, qui servira a la renseigner ensuite.
+
 ### 6. Installer ou verifier OctoPrint
 
 Le script configure l'API Replicator pour parler a OctoPrint sur :
@@ -611,20 +615,18 @@ ssh flt@ADRESSE_IP_DU_RASPBERRY
 Sur le Raspberry :
 
 ```bash
-sudo systemctl edit replicator-api
+sudo nano /etc/replicator2.env
 ```
 
 Coller :
 
 ```ini
-[Service]
-Environment=OCTOPRINT_KEY=COLLER_LA_CLE_ICI
+OCTOPRINT_KEY=COLLER_LA_CLE_ICI
 ```
 
 Puis relancer :
 
 ```bash
-sudo systemctl daemon-reload
 sudo systemctl restart replicator-api
 sudo journalctl -u replicator-api -f
 ```
