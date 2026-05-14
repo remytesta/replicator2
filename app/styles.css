@@ -34,9 +34,7 @@ html, body {
 }
 
 body {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  display: block;
 }
 
 button {
@@ -67,13 +65,10 @@ svg {
 
 .app-shell {
   position: relative;
-  width: min(100vw, calc(100dvh * 0.6));
+  width: 100vw;
   height: 100dvh;
-  min-width: 320px;
   background: var(--paper);
   overflow: hidden;
-  border-left: 1px solid var(--line);
-  border-right: 1px solid var(--line);
 }
 
 /* Screens */

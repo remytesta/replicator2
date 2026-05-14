@@ -1,355 +1,191 @@
 # REPLICATOR 2
 
-Installation interactive - Festival du Peu 2026  
-Le Broc, Alpes-Maritimes - du 29 mai au 21 juin 2026
+Installation interactive pour le Festival du Peu 2026, Le Broc.
 
-Projet : transformer une imprimante 3D Creality CR-10S en machine interactive pilotee par un Raspberry Pi.
-
-Le but est que l'installation puisse fonctionner en local, sans internet, avec une interface web simple affichee sur tablette, ecran HDMI ou telephone.
+Objectif : piloter une Creality CR-10S avec un Raspberry Pi, OctoPrint et une PWA museale affichee en kiosk sur ecran tactile.
 
 ---
 
-## Urgence carte SD cassee Raspberry Pi
+## Etat valide au 14 mai 2026
 
-Runbook complet pour repartir de zero apres casse ou corruption de la carte SD du Raspberry Pi.
+Cette section est la reference atelier actuelle.
 
-### 1. Refaire la carte SD
-
-Depuis un ordinateur, installer Raspberry Pi Imager puis flasher la carte SD avec :
+### Machine
 
 ```text
-Raspberry Pi OS Lite 64-bit
+Raspberry hostname : replicator2
+Utilisateur        : flt
+Projet             : /home/flt/replicator2
+PWA servie par     : Nginx
+OctoPrint          : service octoprint, port 5000
+API Replicator     : service replicator-api, port 8080
+Kiosk ecran        : service replicator-kiosk
+Cle OctoPrint      : /etc/replicator2.env
 ```
 
-Dans les options avancees de Raspberry Pi Imager :
+### URLs
+
+Remplacer `192.168.8.101` par l'IP actuelle du Raspberry si elle change.
 
 ```text
-Hostname : replicator2
-User     : flt
-Password : choisir le mot de passe atelier
-SSH      : active
-WiFi     : reseau temporaire de l'atelier si besoin
-Locale   : France / clavier FR si necessaire
+PWA Replicator      : http://192.168.8.101/
+API status          : http://192.168.8.101/api/status
+OctoPrint direct    : http://192.168.8.101:5000/
+OctoPrint via nginx : http://192.168.8.101/octoprint/
 ```
 
-Important : le script `install.sh` attend l'utilisateur `flt` et installe le projet dans :
+Depuis le Raspberry :
+
+```bash
+curl -s http://localhost/api/status
+curl -s http://127.0.0.1:5000/api/version
+```
+
+### Branche atelier actuelle
+
+La branche poussee avec les corrections kiosk/cache/install est :
 
 ```text
-/home/flt/replicator2
+msueal-v5
 ```
 
-### 2. Premier demarrage
-
-1. Inserer la carte SD dans le Raspberry Pi.
-2. Brancher clavier/ecran ou se connecter en SSH.
-3. Verifier que la machine demarre et que l'utilisateur est bien `flt`.
-
-En SSH depuis un autre ordinateur :
-
-```bash
-ssh flt@replicator2.local
-```
-
-Si `replicator2.local` ne repond pas, chercher l'IP dans la box ou avec un scan reseau, puis :
-
-```bash
-ssh flt@ADRESSE_IP_DU_RASPBERRY
-```
-
-### 3. Installer les outils minimum
-
-Sur le Raspberry :
-
-```bash
-sudo apt update
-sudo apt install -y git curl
-```
-
-### 4. Recuperer le projet
-
-Cloner la branche de production actuelle :
-
-```bash
-cd /home/flt
-git clone -b main https://github.com/remytesta/replicator2.git replicator2
-cd /home/flt/replicator2
-```
-
-Si le dossier existe deja mais est incomplet ou casse :
-
-```bash
-cd /home/flt
-mv replicator2 replicator2_broken_$(date +%Y%m%d_%H%M%S)
-git clone -b main https://github.com/remytesta/replicator2.git replicator2
-cd /home/flt/replicator2
-```
-
-### 5. Lancer l'installation automatique
-
-Ne pas lancer le script avec `sudo`. Il demandera `sudo` seulement quand c'est necessaire.
+Mise a jour sur le Raspberry :
 
 ```bash
 cd /home/flt/replicator2
-bash install.sh
-```
-
-Le script installe notamment :
-
-```text
-Nginx
-API Flask Replicator
-dossier app/
-dossier gcode/
-services systemd
-hotspot local REPLICATOR2
-proxy /api/ vers Flask
-proxy /octoprint/ vers OctoPrint
-```
-
-La cle API OctoPrint n'est pas demandee pendant cette installation. C'est normal :
-elle n'existe qu'apres la premiere configuration d'OctoPrint. Le script cree le
-fichier `/etc/replicator2.env`, qui servira a la renseigner ensuite.
-
-### 6. Installer ou verifier OctoPrint
-
-Le script configure l'API Replicator pour parler a OctoPrint sur :
-
-```text
-http://127.0.0.1:5000
-```
-
-Si OctoPrint n'est pas encore installe sur la nouvelle carte SD, l'installer avant les tests machine. Une fois OctoPrint present :
-
-```bash
-sudo systemctl status octoprint --no-pager
-curl -s http://127.0.0.1:5000
-```
-
-Brancher ensuite la CR-10S en USB et verifier dans OctoPrint que l'imprimante est visible.
-
-### 7. Verifier les services Replicator
-
-```bash
-sudo systemctl status nginx --no-pager
-sudo systemctl status replicator-api --no-pager
-curl -I http://localhost/
-curl -s http://localhost/index.html | grep "app.js"
-```
-
-Verifier que les fichiers G-code sont presents :
-
-```bash
-ls -1 /home/flt/replicator2/gcode | head
-ls -1 /home/flt/replicator2/gcode | grep "choreo_global"
-```
-
-### 8. Ouvrir l'interface
-
-Depuis le Raspberry ou un appareil connecte au meme reseau :
-
-```text
-http://replicator2.local/
-```
-
-ou :
-
-```text
-http://ADRESSE_IP_DU_RASPBERRY/
-```
-
-Si le hotspot a ete active par `install.sh`, connecter la tablette au WiFi :
-
-```text
-SSID : REPLICATOR2
-Mot de passe : replicator2026
-IP attendue Raspberry : 10.0.0.1
-URL : http://10.0.0.1/
-```
-
-### 9. Mettre a jour plus tard
-
-Quand un nouveau commit est pousse en production :
-
-```bash
-cd /home/flt/replicator2
-git pull origin main
-bash install.sh
+git pull origin msueal-v5
 sudo systemctl restart nginx
+sudo systemctl stop replicator-kiosk
+rm -rf /home/flt/.cache/chromium
+rm -rf /home/flt/.config/chromium
+sudo systemctl start replicator-kiosk
+```
+
+Verifier que la PWA n'est plus une vieille version :
+
+```bash
+curl -s http://localhost/index.html | grep 'v='
+```
+
+La version valide apres le fix bouton/cache est `v18`.
+
+---
+
+## Runbook interventions du 14 mai 2026
+
+Cette section resume les corrections validees pendant la session atelier.
+
+### Probleme 1 : cle API OctoPrint confuse
+
+Ancienne doc :
+
+```bash
+sudo systemctl edit replicator-api
+```
+
+Cette methode a ete abandonnee parce qu'elle ouvre un override systemd fragile. La methode validee est :
+
+```bash
+echo 'OCTOPRINT_KEY=COLLER_LA_CLE_ICI' | sudo tee /etc/replicator2.env
+sudo chmod 600 /etc/replicator2.env
 sudo systemctl restart replicator-api
 ```
 
-Si la tablette affiche encore l'ancienne interface, vider le cache du navigateur ou redemarrer le kiosk/Chromium.
+### Probleme 2 : OctoPrint direct OK, proxy `/octoprint/` KO
 
----
-
-## Runbook du 14 mai 2026
-
-Objectif du jour : reconstruire une version production de l'interface museale et preparer la reprise apres casse de carte SD.
-
-### Etat Git production
-
-Les branches `main` et `hostinger-deploy` pointent sur le meme commit de production :
+OctoPrint marchait sur :
 
 ```text
-e95c2bd Update museal interface and gcode choreography hooks
+http://192.168.8.101:5000/
 ```
 
-Pour recuperer cette version sur le Raspberry :
+Le proxy Nginx `/octoprint/` a ete corrige avec les headers :
 
-```bash
-cd /home/flt/replicator2
-git pull origin main
+```nginx
+proxy_set_header X-Script-Name /octoprint;
+proxy_set_header X-Scheme $scheme;
+proxy_set_header Upgrade $http_upgrade;
+proxy_set_header Connection "upgrade";
+proxy_redirect off;
 ```
 
-### Changements interface du jour
+### Probleme 3 : API Flask OK en direct, KO via Nginx
 
-- Page Chapelle : suppression du titre visible `Replicator 2`, hotspots plus sobres, label Maquette a gauche, bouton Console differencie.
-- Modale Chapelle : plus compacte, croix petite en haut a droite, CTA `Lancer la Choregraphie`.
-- Diaporamas : media en premier, images/videos en `cover`, bouton `Chapelle` compact en haut a droite, scenes visibles en footer, pas de pulsation scene.
-- Videos : boutons icones play/pause et son on/off, loader de chargement, pause et nettoyage quand on revient a Chapelle.
-- Console : historique G-code scrollable, 4 boutons de choregraphie fixes en bas en grille 2 colonnes.
-- Notifications debug G-code : petites, semi-transparentes, en haut a gauche, vert si G-code lance, rouge si erreur API/OctoPrint.
-
-### G-code du jour
-
-Des fichiers G-code nommes par mouvement ont ete ajoutes dans `gcode/`.
-
-Exemples :
+Symptome :
 
 ```text
-choreo_maquette_respiration.gcode
-choreo_maquette_rotation_lente.gcode
-choreo_mns_tour_complet.gcode
-choreo_mns_signature_finale.gcode
-choreo_asa_vent_sable.gcode
-choreo_asa_alternance.gcode
-choreo_podium_buee_disparition.gcode
-choreo_poeme_reveal_arriere.gcode
-choreo_global_meme_vitesse.gcode
-choreo_global_acceleration_effets_off.gcode
-choreo_global_cascade_fond_avant.gcode
-choreo_global_suspension_extinction.gcode
+405 Not Allowed
 ```
 
-Verifier sur le Raspberry :
+La commande directe marchait :
 
 ```bash
-ls -1 /home/flt/replicator2/gcode/choreo_*.gcode | wc -l
+curl -X POST http://127.0.0.1:8080/api/gcode -H "Content-Type: application/json" -d '{"command":"M105"}'
 ```
 
-### Test rapide apres reinstall
+La config Nginx a ete reecrite pour que `/api/` proxy bien vers Flask :
+
+```nginx
+location /api/ {
+    proxy_pass http://127.0.0.1:8080/api/;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+}
+```
+
+Validation :
 
 ```bash
-curl -I http://localhost/
-curl -s http://localhost/index.html | grep "vases-data.js"
-curl -s http://localhost/api/status
-sudo systemctl status replicator-api --no-pager
-sudo systemctl status nginx --no-pager
+curl -X POST http://localhost/api/gcode -H "Content-Type: application/json" -d '{"command":"M105"}'
 ```
 
-Si `curl -s http://localhost/api/status` renvoie une erreur OctoPrint, verifier d'abord :
+Reponse valide :
 
-```bash
-sudo systemctl status octoprint --no-pager
+```json
+{"message":"G-code envoye: M105","status":"ok"}
 ```
 
-### Point d'attention
+### Probleme 4 : kiosk et autologin
 
-Les G-code sont des sequences de base a ajuster aux amplitudes reelles des moteurs et aux branchements effectifs. Avant ouverture publique, tester chaque fichier un par un avec la machine surveillee.
-
----
-
-## Ce qu'on fait today
-
-
-Objectif realiste :
-
-1. Demarrer le Raspberry Pi.
-2. Verifier que SSH marche depuis le Mac de l'atelier.
-3. Installer ou ouvrir OctoPrint.
-4. Brancher la CR-10S en USB.
-5. Verifier qu'OctoPrint voit bien l'imprimante.
-6. Afficher la PWA (Progressive Web App, l'interface user) sur la tablette ou l'ecran branche en HDMI au Raspberry.
-7. Recuperer les infos de l'ecran integre de la CR-10S pour preparer la phase 3.
-
-La chaine a valider demain :
+Le Raspberry arrivait sur le login console. L'autologin `flt` et le service kiosk ont ete valides avec :
 
 ```text
-Mac de l'atelier
-      |
-      v
-SSH vers Raspberry
-      |
-      +--> OctoPrint -> CR-10S en USB
-      |
-      +--> PWA -> ecran/tablette HDMI
+replicator-kiosk.service
+/home/flt/.xinitrc
+/etc/systemd/system/getty@tty1.service.d/autologin.conf
 ```
 
-Le hotspot WiFi et la modification de l'ecran integre viennent apres.
+### Probleme 5 : orientation ecran et tactile
 
----
+La rotation validee en fin de session etait :
 
-## Runbook atelier valide le 9 mai 2026
+```bash
+xrandr -o right
+xinput set-prop "WaveShare WS170120" "Coordinate Transformation Matrix" 0 1 0 -1 0 1 0 0 1 || true
+```
 
-Cette section resume ce qui a ete fait pendant la mise en route de la branche `museal` sur le Raspberry.
+### Probleme 6 : Google Translate revient dans Chromium
 
-### Recuperer la PWA museale
-
-Sur le Raspberry, le dossier servi par Nginx doit etre :
+Solution la plus forte ajoutee au runbook : policy systeme Chromium dans :
 
 ```text
-/home/flt/replicator2/app
+/etc/chromium/policies/managed/replicator-no-translate.json
 ```
 
-Verifier le root Nginx :
+Avec :
 
-```bash
-sudo nginx -T | grep "root"
+```json
+{
+  "TranslateEnabled": false,
+  "DefaultBrowserSettingEnabled": false,
+  "BrowserSignin": 0,
+  "SyncDisabled": true
+}
 ```
 
-Le resultat attendu :
+### Probleme 7 : PWA encore en cache `v17`
 
-```text
-root /home/flt/replicator2/app;
-```
-
-Si `/home/flt/replicator2` n'est pas un repo Git ou si `git pull` dit `not a git repository`, remplacer proprement le dossier par le clone Git :
-
-```bash
-cd /home/flt
-mv replicator2 replicator2_old
-git clone -b museal https://github.com/remytesta/replicator2.git replicator2
-sudo systemctl restart nginx
-```
-
-Verifier que la nouvelle PWA est bien servie :
-
-```bash
-grep "vases-data.js" /home/flt/replicator2/app/index.html
-curl -s http://localhost/index.html | grep "vases-data.js"
-```
-
-Les deux commandes doivent afficher :
-
-```html
-<script src="vases-data.js"></script>
-```
-
-### Ancienne app encore affichee
-
-La nouvelle PWA est dans `index.html`, mais l'ancien fichier `replicator2.html` peut encore etre appele par un vieux raccourci ou par Chromium. Sur la branche `museal`, `replicator2.html` redirige maintenant vers :
-
-```text
-/index.html?v=12
-```
-
-Verifier :
-
-```bash
-curl -s http://localhost/replicator2.html | grep "index.html?v=12"
-```
-
-Si l'ancienne app reste visible alors que `curl` sert bien la nouvelle PWA, vider le profil Chromium et redemarrer le kiosk :
+Le fix PWA est en `v18`. Apres `git pull`, il faut vider Chromium :
 
 ```bash
 sudo systemctl stop replicator-kiosk
@@ -358,13 +194,268 @@ rm -rf /home/flt/.config/chromium
 sudo systemctl start replicator-kiosk
 ```
 
-### Service kiosk ecran tactile
+---
 
-Le service qui lance Chromium est :
+## Services
+
+### Verifier les services
 
 ```bash
+sudo systemctl status nginx --no-pager
+sudo systemctl status octoprint --no-pager
+sudo systemctl status replicator-api --no-pager
 sudo systemctl status replicator-kiosk --no-pager
-sudo systemctl cat replicator-kiosk.service
+```
+
+### Redemarrer les services
+
+```bash
+sudo systemctl restart nginx
+sudo systemctl restart octoprint
+sudo systemctl restart replicator-api
+sudo systemctl restart replicator-kiosk
+```
+
+### Logs utiles
+
+```bash
+sudo journalctl -u nginx -n 80 --no-pager
+sudo journalctl -u octoprint -n 80 --no-pager
+sudo journalctl -u replicator-api -n 80 --no-pager
+sudo journalctl -u replicator-kiosk -n 80 --no-pager
+```
+
+---
+
+## OctoPrint et G-code
+
+Les G-code marchent seulement si OctoPrint est lance, si la cle API est bonne, et si l'imprimante est connectee dans OctoPrint.
+
+### Ouvrir OctoPrint
+
+Depuis un ordinateur sur le meme reseau :
+
+```text
+http://ADRESSE_IP_DU_RASPBERRY:5000/
+```
+
+Exemple atelier :
+
+```text
+http://192.168.8.101:5000/
+```
+
+### Connecter la CR-10S
+
+Dans OctoPrint, panneau `Connection` :
+
+```text
+Serial Port : /dev/ttyUSB0
+Baudrate    : 115200
+```
+
+Activer aussi :
+
+```text
+Auto-connect to printer on server startup
+```
+
+Si `115200` ne marche pas, tester `250000`.
+
+Verifier que le Raspberry voit l'imprimante :
+
+```bash
+ls -l /dev/ttyUSB* /dev/ttyACM* 2>/dev/null
+```
+
+Sur le prototype, le bon port etait :
+
+```text
+/dev/ttyUSB0
+```
+
+### Tester la chaine G-code
+
+Tester OctoPrint directement :
+
+```bash
+curl -H "X-Api-Key: COLLER_LA_CLE_ICI" http://127.0.0.1:5000/api/version
+```
+
+Tester l'API Flask directe :
+
+```bash
+curl -X POST http://127.0.0.1:8080/api/gcode -H "Content-Type: application/json" -d '{"command":"M105"}'
+```
+
+Tester l'API via Nginx, comme le fait la PWA :
+
+```bash
+curl -X POST http://localhost/api/gcode -H "Content-Type: application/json" -d '{"command":"M105"}'
+```
+
+Reponse attendue :
+
+```json
+{"message":"G-code envoye: M105","status":"ok"}
+```
+
+Tester une choregraphie :
+
+```bash
+curl -X POST http://localhost/api/choreo/run/maquette_respiration
+```
+
+Verifier les fichiers G-code :
+
+```bash
+ls -1 /home/flt/replicator2/gcode/choreo_*.gcode | wc -l
+ls -1 /home/flt/replicator2/gcode | grep "choreo_global"
+```
+
+### Si OctoPrint bouge mais pas l'app
+
+Tester l'API via Nginx :
+
+```bash
+curl -X POST http://localhost/api/gcode -H "Content-Type: application/json" -d '{"command":"M105"}'
+```
+
+Si ca renvoie `405 Not Allowed`, Nginx ne proxy pas `/api/` vers Flask. Revoir la config Nginx plus bas.
+
+Si ca renvoie `ok`, vider Chromium :
+
+```bash
+sudo systemctl stop replicator-kiosk
+rm -rf /home/flt/.cache/chromium
+rm -rf /home/flt/.config/chromium
+sudo systemctl start replicator-kiosk
+```
+
+---
+
+## Cle API OctoPrint
+
+### Generer la cle
+
+Dans OctoPrint :
+
+```text
+Settings
+-> Application Keys ou API
+-> creer une cle pour replicator2
+-> copier la cle
+```
+
+### Installer la cle sur le Raspberry
+
+Ne plus utiliser `sudo systemctl edit replicator-api`.
+
+Methode simple :
+
+```bash
+echo 'OCTOPRINT_KEY=COLLER_LA_CLE_ICI' | sudo tee /etc/replicator2.env
+sudo chmod 600 /etc/replicator2.env
+sudo systemctl restart replicator-api
+```
+
+Verifier :
+
+```bash
+sudo cat /etc/replicator2.env
+curl -H "X-Api-Key: COLLER_LA_CLE_ICI" http://127.0.0.1:5000/api/version
+curl -s http://localhost/api/status
+```
+
+---
+
+## Nginx
+
+### Root attendu
+
+Nginx doit servir :
+
+```text
+/home/flt/replicator2/app
+```
+
+Verifier :
+
+```bash
+sudo nginx -T | grep "root"
+```
+
+Resultat attendu :
+
+```text
+root /home/flt/replicator2/app;
+```
+
+### Config Nginx valide
+
+Si `/api/` ou `/octoprint/` casse, reecrire la config :
+
+```bash
+sudo tee /etc/nginx/sites-available/default >/dev/null <<'EOF'
+server {
+    listen 80;
+    server_name _;
+    root /home/flt/replicator2/app;
+    index index.html;
+
+    location = /sw.js {
+        add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" always;
+        try_files $uri =404;
+    }
+
+    location = /manifest.json {
+        add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" always;
+        try_files $uri =404;
+    }
+
+    location ~* \.(?:html|js|css)$ {
+        add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" always;
+        try_files $uri =404;
+    }
+
+    location /api/ {
+        proxy_pass http://127.0.0.1:8080/api/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    location /octoprint/ {
+        proxy_pass http://127.0.0.1:5000/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Script-Name /octoprint;
+        proxy_set_header X-Scheme $scheme;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_redirect off;
+    }
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
+EOF
+
+sudo nginx -t
+sudo systemctl restart nginx
+```
+
+Ne pas coller seulement le bloc `location /api/` dans le terminal : ce n'est pas une commande Bash.
+
+---
+
+## Kiosk ecran tactile
+
+Le kiosk est gere par :
+
+```text
+replicator-kiosk.service
 ```
 
 Il lance :
@@ -373,14 +464,31 @@ Il lance :
 /home/flt/.xinitrc
 ```
 
-Version fonctionnelle de `/home/flt/.xinitrc` pour l'ecran Waveshare en portrait `left`, sans Google Translate :
+### Service kiosk
+
+Verifier :
+
+```bash
+sudo systemctl status replicator-kiosk --no-pager
+sudo systemctl cat replicator-kiosk.service
+```
+
+Redemarrer seulement l'ecran/PWA :
+
+```bash
+sudo systemctl restart replicator-kiosk
+```
+
+### Version .xinitrc valide
+
+Version de base pour ecran Waveshare, Chromium kiosk, Google Translate desactive :
 
 ```bash
 xset s off
 xset -dpms
 xset s noblank
-xrandr -o left
-xinput set-prop "WaveShare WS170120" "Coordinate Transformation Matrix" 0 -1 1 1 0 0 0 0 1
+xrandr -o right
+xinput set-prop "WaveShare WS170120" "Coordinate Transformation Matrix" 0 1 0 -1 0 1 0 0 1 || true
 unclutter -idle 0.2 &
 openbox-session &
 chromium --kiosk \
@@ -391,615 +499,300 @@ chromium --kiosk \
   --disable-infobars \
   --disable-session-crashed-bubble \
   --disable-translate \
-  --disable-features=Translate,TranslateUI \
+  --disable-features=Translate,TranslateUI,OptimizationHints \
+  --disable-component-update \
   --lang=fr-FR \
   --accept-lang=fr-FR \
   http://localhost/index.html?v=103
 ```
 
-Redemarrer seulement le kiosk :
+### Rotation ecran et tactile
+
+Normal :
 
 ```bash
-sudo systemctl restart replicator-kiosk
+xrandr -o normal
+xinput set-prop "WaveShare WS170120" "Coordinate Transformation Matrix" 1 0 0 0 1 0 0 0 1 || true
 ```
 
-Si `xinput` manque :
+180 degres :
 
 ```bash
-sudo apt update
-sudo apt install -y xinput
+xrandr -o inverted
+xinput set-prop "WaveShare WS170120" "Coordinate Transformation Matrix" -1 0 1 0 -1 1 0 0 1 || true
 ```
 
-Identifier l'ecran tactile :
+90 degres gauche :
+
+```bash
+xrandr -o left
+xinput set-prop "WaveShare WS170120" "Coordinate Transformation Matrix" 0 -1 1 1 0 0 0 0 1 || true
+```
+
+90 degres droite :
+
+```bash
+xrandr -o right
+xinput set-prop "WaveShare WS170120" "Coordinate Transformation Matrix" 0 1 0 -1 0 1 0 0 1 || true
+```
+
+Identifier le nom exact du tactile :
 
 ```bash
 DISPLAY=:0 xinput list
 ```
 
-Sur le prototype teste, le nom etait :
+Sur le prototype :
 
 ```text
 WaveShare WS170120
 ```
 
-### API Flask apres remplacement du dossier
+### Bloquer Google Translate
 
-Si on remplace `/home/flt/replicator2` par un clone Git, le virtualenv Python peut disparaitre. Symptome :
+Chromium peut faire revenir Google Translate malgre les flags. Ajouter une policy systeme :
+
+```bash
+sudo systemctl stop replicator-kiosk
+
+sudo mkdir -p /etc/chromium/policies/managed
+
+sudo tee /etc/chromium/policies/managed/replicator-no-translate.json >/dev/null <<'EOF'
+{
+  "TranslateEnabled": false,
+  "DefaultBrowserSettingEnabled": false,
+  "BrowserSignin": 0,
+  "SyncDisabled": true
+}
+EOF
+
+rm -rf /home/flt/.cache/chromium
+rm -rf /home/flt/.config/chromium
+
+sudo systemctl start replicator-kiosk
+```
+
+Verifier dans Chromium :
 
 ```text
-replicator-api.service: Unable to locate executable '/home/flt/replicator2/venv/bin/python'
-```
-
-Recreer le virtualenv :
-
-```bash
-cd /home/flt/replicator2
-python3 -m venv venv
-./venv/bin/pip install flask flask-cors requests
-sudo systemctl restart replicator-api
-```
-
-Verifier :
-
-```bash
-sudo systemctl status replicator-api --no-pager
-curl -s http://localhost:8080/api/status
-curl -s http://localhost/api/status
-```
-
-Si `http://localhost/api/status` renvoie `502 Bad Gateway`, l'API Flask ne tourne pas ou plante.
-
-### OctoPrint et G-code
-
-Les G-code ne marchent que si OctoPrint tourne ET si l'imprimante est connectee dans OctoPrint.
-
-Verifier OctoPrint :
-
-```bash
-sudo systemctl status octoprint --no-pager
-```
-
-Verifier que l'imprimante est vue en USB :
-
-```bash
-ls -l /dev/ttyUSB* /dev/ttyACM* 2>/dev/null
-```
-
-Sur le prototype teste, le bon port etait :
-
-```text
-/dev/ttyUSB0
-```
-
-Ouvrir OctoPrint depuis un appareil sur le meme reseau Ethernet que le Raspberry :
-
-```bash
-hostname -I
-```
-
-Puis dans le navigateur :
-
-```text
-http://ADRESSE_IP_DU_RASPBERRY:5000
-```
-
-Dans OctoPrint, panneau `Connection` :
-
-```text
-Serial Port: /dev/ttyUSB0
-Baudrate: 115200
-```
-
-Si `115200` ne marche pas, essayer `250000`.
-
-Quand OctoPrint affiche `Operational`, verifier :
-
-```bash
-curl -s http://localhost/api/status
+chrome://policy
 ```
 
 On veut voir :
 
-```json
-"connected": true
+```text
+TranslateEnabled = false
 ```
 
-Tester une choregraphie :
+### Si le kiosk demande encore login
+
+Forcer l'autologin console :
 
 ```bash
-curl -s -X POST http://localhost/api/choreo/run/1
+sudo mkdir -p /etc/systemd/system/getty@tty1.service.d
+
+sudo tee /etc/systemd/system/getty@tty1.service.d/autologin.conf >/dev/null <<'EOF'
+[Service]
+ExecStart=
+ExecStart=-/sbin/agetty --autologin flt --noclear %I $TERM
+EOF
+
+sudo systemctl set-default multi-user.target
+sudo systemctl daemon-reload
+sudo reboot
 ```
 
-### Services utiles
+---
 
-```bash
-sudo systemctl restart nginx
-sudo systemctl restart replicator-api
-sudo systemctl restart replicator-kiosk
-sudo systemctl restart octoprint
-```
+## Installation neuve apres carte SD cassee
 
-Logs utiles :
+### 1. Flasher la carte SD
 
-```bash
-sudo journalctl -u replicator-api -n 80 --no-pager
-sudo journalctl -u replicator-kiosk -n 80 --no-pager
-sudo journalctl -u octoprint -n 80 --no-pager
-```
-
-### Probleme rencontre
-
-Le blocage final venait du fait que l'imprimante n'etait pas connectee au bon port USB / pas reconnectee dans OctoPrint. Le Raspberry voyait bien :
+Avec Raspberry Pi Imager :
 
 ```text
-/dev/ttyUSB0
+OS       : Raspberry Pi OS Lite 64-bit
+Hostname : replicator2
+User     : flt
+SSH      : active
+WiFi     : reseau atelier si besoin
+Locale   : France / clavier FR
 ```
 
-mais OctoPrint indiquait `Printer is not operational`. Il a fallu ouvrir OctoPrint et connecter l'imprimante sur `/dev/ttyUSB0`.
+### 2. Premier demarrage
 
----
-
-## Installer Git sur le Mac de l'atelier
-
-Sur le Mac, ouvrir Terminal.
-
-Installer Git :
+Depuis l'ordinateur atelier :
 
 ```bash
-xcode-select --install
+ssh flt@replicator2.local
 ```
 
-Verifier que Git est installe :
-
-```bash
-git --version
-```
-
-Recuperer le projet :
-
-```bash
-cd ~/Desktop
-git clone https://github.com/remytesta/replicator2.git
-cd replicator2
-```
-
-Plus tard, pour recuperer les mises a jour :
-
-```bash
-cd ~/Desktop/replicator2
-git pull
-```
-
----
-
-## Activer SSH sur le Raspberry
-
-Le plus simple est de le faire dans Raspberry Pi Imager avant de flasher la carte SD.
-
-Dans Raspberry Pi Imager :
-
-1. Choisir Raspberry Pi OS.
-2. Ouvrir les options avancees.
-3. Activer SSH.
-4. Definir l'utilisateur et le mot de passe.
-5. Configurer le WiFi de l'atelier si besoin.
-6. Flasher la carte SD.
-
-Depuis le Mac :
-
-```bash
-ssh flt@raspberrypi.local
-```
-
-Si `raspberrypi.local` ne marche pas, trouver l'adresse IP du Raspberry dans la box ou le routeur, puis :
+Si ca ne marche pas, chercher l'IP dans la box puis :
 
 ```bash
 ssh flt@ADRESSE_IP_DU_RASPBERRY
 ```
 
+### 3. Installer Git et cloner
+
+```bash
+sudo apt update
+sudo apt install -y git curl
+
+cd /home/flt
+git clone -b msueal-v5 https://github.com/remytesta/replicator2.git replicator2
+cd /home/flt/replicator2
+```
+
+Si le dossier existe mais est casse :
+
+```bash
+cd /home/flt
+mv replicator2 replicator2_broken_$(date +%Y%m%d_%H%M%S)
+git clone -b msueal-v5 https://github.com/remytesta/replicator2.git replicator2
+cd /home/flt/replicator2
+```
+
+### 4. Lancer install.sh
+
+Ne pas lancer avec `sudo`.
+
+```bash
+bash install.sh
+```
+
+Le script demande si la cle API OctoPrint existe deja :
+
+```text
+Avez-vous deja la cle API OctoPrint ? [o/n]
+```
+
+Si OctoPrint n'est pas encore configure, repondre `n`, puis ajouter la cle plus tard dans `/etc/replicator2.env`.
+
+### 5. Apres install
+
+```bash
+sudo systemctl status nginx --no-pager
+sudo systemctl status octoprint --no-pager
+sudo systemctl status replicator-api --no-pager
+sudo systemctl status replicator-kiosk --no-pager
+curl -s http://localhost/api/status
+```
+
 ---
 
-## Cle API OctoPrint
+## Alimentation Raspberry
 
-### Generer la cle demain
+OctoPrint peut signaler une sous-alimentation. Dans ce cas, l'USB peut devenir instable et la CR-10S peut se deconnecter.
 
-1. Ouvrir OctoPrint dans le navigateur.
-2. Se connecter au compte admin.
-3. Aller dans les reglages.
-4. Chercher `Application Keys` ou `API`.
-5. Creer une cle pour `replicator2`.
-6. Copier la cle.
+Verifier :
 
-### Installer la cle sur le Raspberry
+```bash
+vcgencmd get_throttled
+```
+
+Resultat ideal :
+
+```text
+throttled=0x0
+```
+
+Si autre chose apparait :
+
+```text
+utiliser une alimentation Raspberry officielle ou 5V / 3A stable
+eviter cable USB trop long ou trop fin
+eviter les hubs USB faibles
+debrancher le clavier/dongle USB si possible
+```
+
+Preferer SSH depuis l'ordinateur :
+
+```bash
+ssh flt@192.168.8.101
+```
+
+---
+
+## Backup carte SD
+
+Le plus fiable est une image complete de la carte SD.
+
+### Depuis Windows
+
+1. Eteindre proprement :
+
+```bash
+sudo shutdown now
+```
+
+2. Retirer la carte SD.
+3. Utiliser Win32 Disk Imager.
+4. Choisir la lettre de la carte SD.
+5. Choisir un fichier de sortie :
+
+```text
+replicator2-backup-2026-05-14.img
+```
+
+6. Cliquer sur `Read`.
+
+### Sauvegarde rapide des configs
 
 Sur le Raspberry :
 
 ```bash
-sudo nano /etc/replicator2.env
+mkdir -p /home/flt/backup-replicator2
+
+sudo cp /etc/nginx/sites-available/default /home/flt/backup-replicator2/nginx-default.conf
+sudo cp /etc/replicator2.env /home/flt/backup-replicator2/replicator2.env
+sudo cp /etc/systemd/system/replicator-api.service /home/flt/backup-replicator2/
+sudo cp /etc/systemd/system/octoprint.service /home/flt/backup-replicator2/
+sudo cp /etc/systemd/system/replicator-kiosk.service /home/flt/backup-replicator2/
+cp /home/flt/.xinitrc /home/flt/backup-replicator2/xinitrc
+
+tar -czf /home/flt/backup-replicator2.tar.gz -C /home/flt backup-replicator2
 ```
-
-Coller :
-
-```ini
-OCTOPRINT_KEY=COLLER_LA_CLE_ICI
-```
-
-Puis relancer :
-
-```bash
-sudo systemctl restart replicator-api
-sudo journalctl -u replicator-api -f
-```
-
-### Tester la cle
-
-Depuis le Raspberry :
-
-```bash
-curl -H "X-Api-Key: COLLER_LA_CLE_ICI" http://127.0.0.1:5000/api/version
-```
-
-Si OctoPrint repond avec une version, la cle fonctionne.
 
 ---
 
-## Architecture cible
+## Hotspot WiFi
+
+Le mode hotspot existe mais il est a utiliser prudemment, car il modifie le reseau et peut compliquer SSH.
+
+Configuration prevue :
 
 ```text
-[ Tablette / telephone / ecran HDMI ]
+SSID          : REPLICATOR2
+Mot de passe  : replicator2026
+IP Raspberry  : 10.0.0.1
+URL PWA       : http://10.0.0.1/
+```
+
+Pour la mise au point atelier, preferer le WiFi/routeur existant, par exemple le routeur Huawei.
+
+---
+
+## Architecture
+
+```text
+[ PWA Chromium kiosk / tablette / ordinateur ]
                  |
                  v
-[ PWA servie par Nginx ]
+[ Nginx : http://raspberry/ ]
                  |
-                 v
-[ API Flask locale ]
+                 +--> /api/        -> [ API Flask replicator-api : 127.0.0.1:8080 ]
+                 |                         |
+                 |                         v
+                 |                  [ OctoPrint : 127.0.0.1:5000 ]
+                 |                         |
+                 |                         v
+                 |                  [ CR-10S via USB ]
                  |
-                 +--> [ OctoPrint ] --> [ CR-10S via USB ]
-                 |
-                 +--> [ GPIO Raspberry ] --> [ ventilateurs / relais ]
+                 +--> /octoprint/  -> [ OctoPrint via proxy ]
 ```
 
-Principe important : la PWA ne doit pas parler directement a OctoPrint avec une cle visible dans le navigateur. La PWA doit appeler l'API Flask locale, et l'API Flask garde la cle OctoPrint cote Raspberry.
-
----
-
-## Phase 1 - Atelier, ecran HDMI
-
-Objectif : faire tourner l'installation en atelier avec le Raspberry branche au reseau de l'atelier et a un ecran ou une tablette en HDMI.
-
-Ce qu'il faut valider :
-
-- Raspberry Pi demarre correctement.
-- SSH fonctionne.
-- OctoPrint fonctionne.
-- La CR-10S est visible dans OctoPrint.
-- La PWA s'affiche en local.
-- Le mode kiosk peut afficher la PWA en plein ecran.
-
-Lancer Chromium en plein ecran :
-
-```bash
-chromium --kiosk --noerrdialogs --disable-infobars http://localhost/
-```
-
-Si `chromium` n'existe pas, essayer l'ancien nom du binaire :
-
-```bash
-chromium-browser --kiosk --noerrdialogs --disable-infobars http://localhost/
-```
-
-Si aucun des deux n'existe :
-
-```bash
-sudo apt update
-sudo apt install -y chromium-browser || sudo apt install -y chromium
-```
-
-On doit lancer cette commande a la main depuis la session graphique du Raspberry, sans `sudo`. L'autodemarrage viendra apres.
-
----
-
-## Phase 2 - Hotspot WiFi
-
-Objectif : rendre le Raspberry autonome en exposition.
-
-Le Raspberry creera son propre WiFi :
-
-```text
-Nom du WiFi : REPLICATOR2
-Adresse    : http://10.0.0.1
-```
-
-Les visiteurs se connecteront au WiFi `REPLICATOR2`, puis ouvriront `http://10.0.0.1` dans leur navigateur.
-
-Pour aider les telephones a ouvrir automatiquement la PWA comme un portail captif :
-
-```ini
-interface=wlan0
-dhcp-range=10.0.0.10,10.0.0.50,255.255.255.0,24h
-domain=local
-address=/replicator.local/10.0.0.1
-address=/#/10.0.0.1
-```
-
-`address=/#/10.0.0.1` force les noms de domaine demandes par les telephones a revenir vers le Raspberry. Nginx doit aussi rediriger les URLs de detection captive vers `/` :
-
-```text
-/generate_204
-/hotspot-detect.html
-/canonical.html
-/ncsi.txt
-```
-
-Pour cette phase, il faudra separer ou parameteriser l'installation :
-
-- mode atelier : reseau normal, SSH facile, pas de hotspot ;
-- mode exposition : hotspot, IP fixe, DHCP local, Nginx.
-
-On ne l'active pas en premier demain, parce que le hotspot change la configuration reseau du Raspberry. Si on rate cette etape trop tot, on peut se compliquer l'acces SSH.
-
----
-
-## Le script `install.sh` 🛑STAND BY🛑
-
-Le fichier `install.sh` est le script d'installation automatique du Raspberry.
-
-L'idee : au lieu de taper 50 commandes a la main, on lance un seul script, et il prepare le Raspberry.
-
-Commande prevue :
-
-```bash
-git clone https://github.com/remytesta/replicator2.git
-cd replicator2
-bash install.sh
-```
-
-Important : le script actuel installe aussi le mode hotspot WiFi. Pour demain, il faut etre prudent, parce qu'on veut d'abord tester le mode atelier avec SSH et ecran HDMI.
-
-### Ce que fait le script aujourd'hui
-
-1. Met a jour le Raspberry :
-
-```bash
-sudo apt update
-sudo apt upgrade
-```
-
-2. Installe les logiciels necessaires :
-
-- `nginx` : sert la PWA dans le navigateur ;
-- `git` : recupere le projet depuis GitHub ;
-- `python3-pip` et `python3-venv` : installent l'API Flask ;
-- `hostapd` : cree le WiFi `REPLICATOR2` ;
-- `dnsmasq` : donne des adresses IP aux telephones connectes au hotspot ;
-- `curl`, `wget` : outils de test et telechargement ;
-- `ufw` : pare-feu.
-
-3. Copie les fichiers du projet dans :
-
-```text
-/home/flt/replicator2
-```
-
-4. Cree un environnement Python pour l'API Flask :
-
-```text
-/home/flt/replicator2/venv
-```
-
-5. Installe les dependances Python :
-
-- Flask ;
-- Flask-CORS ;
-- requests ;
-- RPi.GPIO.
-
-6. Cree un service systemd `replicator-api`.
-
-Ce service lance automatiquement :
-
-```text
-/home/flt/replicator2/api/server.py
-```
-
-En clair : l'API Flask redemarre toute seule si le Raspberry redemarre.
-
-7. Configure Nginx.
-
-Nginx sert :
-
-- la PWA sur `http://localhost` ou `http://10.0.0.1` ;
-- l'API Flask via `/api/` ;
-- OctoPrint via `/octoprint/`.
-
-8. Configure une IP fixe :
-
-```text
-10.0.0.1
-```
-
-9. Configure le hotspot WiFi :
-
-```text
-SSID : REPLICATOR2
-Mot de passe : replicator2026
-```
-
-10. Installe OctoPrint dans :
-
-```text
-/home/flt/oprint
-```
-
-11. Cree un service systemd `octoprint`.
-
-OctoPrint pourra donc demarrer automatiquement avec le Raspberry.
-
-### Pourquoi il faut le revoir
-
-Le script actuel melange deux besoins :
-
-- mode atelier : Raspberry connecte au reseau existant, SSH facile, ecran HDMI ;
-- mode exposition : Raspberry autonome, hotspot WiFi, IP fixe.
-
-Pour demain, on veut surtout le mode atelier. Donc le script doit probablement etre separe en deux scripts ou recevoir une option :
-
-```bash
-bash install.sh atelier
-bash install.sh hotspot
-```
-
-Version ideale :
-
-```text
-install-atelier.sh
-  -> installe Nginx, OctoPrint, Flask, PWA, mode kiosk
-  -> ne touche pas au WiFi
-
-install-hotspot.sh
-  -> ajoute hostapd, dnsmasq, IP fixe, reseau REPLICATOR2
-  -> seulement quand le mode atelier est valide
-```
-
-### A ne pas oublier apres installation
-
-Apres installation, il faut encore generer la cle API OctoPrint dans OctoPrint, puis l'ajouter au service `replicator-api`.
-
-Le script ne peut pas deviner cette cle a l'avance.
-
----
-
-## Phase 3 - Modifier l'ecran integre de la CR-10S
-
-Objectif : changer le logo ou l'ecran de demarrage de l'imprimante et l'interface
-
-L'ecran est generalement un petit LCD monochrome type 128x64 avec bouton rotatif. Il est pilote par le firmware de l'imprimante, souvent base sur Marlin.
-
-Donc on ne change pas juste une image comme sur un telephone. On modifie le firmware, puis on reflashe l'imprimante.
-
-### Ce qu'on doit identifier avant de toucher au firmware
-
-Demain, il faut prendre des photos nettes :
-
-1. L'imprimante complete, pour confirmer le modele exact.
-2. L'ecran allume.
-3. Le menu `Info`, `About` ou `Version` si disponible.
-4. La carte mere si le boitier est ouvert.
-5. Les references imprimees sur la carte mere.
-6. Les connecteurs qui vont vers l'ecran.
-7. L'etiquette ou plaque signaletique de l'imprimante.
-
-Pourquoi c'est important : `CR-10S`, `CR-10S Pro`, `CR-10 V2`, etc. ne se flashent pas forcement pareil. Les ecrans ne sont pas toujours les memes.
-
-### Risques
-
-Si on flashe le mauvais firmware :
-
-- l'ecran peut rester bleu ou noir ;
-- l'imprimante peut ne plus demarrer correctement ;
-- les moteurs peuvent etre mal configures ;
-- la chauffe peut etre mal geree ;
-- il faudra reflasher avec le bon firmware pour reparer.
-
-Donc on ne flashe rien demain sans avoir identifie le modele exact.
-
-### Methode probable pour une CR-10S classique
-
-Si c'est bien une CR-10S classique avec ecran LCD 12864, la piste la plus probable est :
-
-1. Recuperer le firmware Marlin compatible CR-10S.
-2. Recuperer la configuration CR-10S correspondante.
-3. Creer une image de logo en noir et blanc, format 128 x 64 pixels.
-4. Convertir cette image en donnees C pour Marlin.
-5. Modifier le fichier `_Bootscreen.h` de Marlin.
-6. Verifier que l'ecran CR-10 stock est bien active dans `Configuration.h`.
-7. Compiler le firmware.
-8. Flasher la carte mere.
-9. Tester que l'imprimante demarre, chauffe et bouge normalement.
-
-### Image du logo
-
-Pour un ecran 12864 :
-
-- taille : 128 pixels de large, 64 pixels de haut ;
-- couleur : noir et blanc uniquement ;
-- pas de degrade ;
-- formes simples ;
-- texte tres lisible ;
-- exporter en BMP ou PNG noir et blanc.
-
-Plus l'image est simple, plus elle sera lisible sur le petit ecran.
-
-### Conversion de l'image
-
-Marlin ne lit pas directement un PNG comme une page web. Il faut transformer l'image en tableau de bytes dans un fichier C/C++.
-
-Workflow classique :
-
-```text
-logo 128x64 noir/blanc
-        |
-        v
-conversion en donnees hexadecimales
-        |
-        v
-_Bootscreen.h
-        |
-        v
-compilation Marlin
-        |
-        v
-flash de l'imprimante
-```
-
-Des outils comme LCDAssistant ou des scripts de conversion bitmap peuvent generer ces donnees pour les LCD 12864.
-
-### Fichiers Marlin a regarder
-
-Dans Marlin, les fichiers importants sont en general :
-
-```text
-Marlin/Configuration.h
-Marlin/_Bootscreen.h
-Marlin/_Statusscreen.h
-```
-
-Dans `Configuration.h`, il faut verifier le type d'ecran. Pour une CR-10 / CR-10S classique, on voit souvent une option du type :
-
-```c
-#define CR10_STOCKDISPLAY
-```
-
-Selon la version de Marlin et la carte mere, il peut aussi y avoir des options liees aux LCD 12864.
-
-### Ce qu'on peut preparer demain sans risque
-
-Demain, on peut faire ces choses-la :
-
-1. Identifier le modele exact.
-2. Faire les photos.
-3. Noter la version firmware affichee par l'imprimante.
-4. Chercher le firmware officiel de retour arriere.
-5. Preparer un premier logo 128 x 64 en noir et blanc.
-
-Ce qu'on ne fait pas demain :
-
-- pas de flash firmware au hasard ;
-- pas de firmware CR-10S Pro sur une CR-10S classique ;
-- pas de firmware trouve au hasard sur un forum sans verifier ;
-- pas de modification avant d'avoir une procedure de retour arriere.
-
-### Plan concret pour plus tard
-
-Quand on aura les photos et le modele exact :
-
-1. Choisir la bonne base firmware.
-2. Compiler une version non modifiee pour verifier que la chaine de compilation marche.
-3. Flasher cette version seulement si elle correspond exactement au materiel.
-4. Ensuite seulement, modifier le boot screen.
-5. Compiler.
-6. Flasher.
-7. Tester les menus, les moteurs, la chauffe, les fins de course.
+Principe : la PWA ne parle pas directement a OctoPrint avec une cle visible dans le navigateur. Elle appelle l'API Flask locale. L'API garde la cle OctoPrint cote Raspberry dans `/etc/replicator2.env`.
 
 ---
 
@@ -1009,19 +802,20 @@ Quand on aura les photos et le modele exact :
 replicator2/
 |-- app/
 |   |-- index.html
-|   |-- manifest.json
+|   |-- styles.css
+|   |-- app.js
+|   |-- vases-data.js
 |   |-- sw.js
-|   |-- icon-192.png
-|   `-- icon-512.png
+|   |-- manifest.json
+|   |-- main/
+|   |-- vase/
+|   `-- diapo/
 |-- api/
 |   |-- server.py
 |   |-- octoprint_client.py
 |   `-- gpio_controller.py
 |-- gcode/
-|   |-- choreo_1.gcode
-|   |-- choreo_2.gcode
-|   |-- choreo_3.gcode
-|   `-- choreo_4.gcode
+|   `-- choreo_*.gcode
 |-- scripts/
 |   `-- gpio_trigger.py
 |-- install.sh
@@ -1030,20 +824,50 @@ replicator2/
 
 ---
 
+## Phase 3 - ecran integre CR-10S
+
+Cette partie n'a pas encore ete faite. Ne pas flasher l'imprimante sans identifier exactement le modele et la carte mere.
+
+Avant toute modification firmware :
+
+```text
+1. Photo de l'imprimante complete.
+2. Photo de l'ecran allume.
+3. Version firmware affichee.
+4. Photo carte mere.
+5. References carte mere.
+6. Type exact d'ecran.
+7. Firmware officiel de retour arriere.
+```
+
+Risques si mauvais firmware :
+
+```text
+ecran noir
+moteurs mal configures
+chauffe mal geree
+imprimante bloquee
+```
+
+---
+
 ## Statut
 
-- [x] Prototype PWA
-- [x] API Flask de base
-- [x] G-code de test
-- [x] README atelier
-- [ ] Corriger API/PWA pour passer uniquement par Flask
-- [ ] Ajouter une route API pour le G-code manuel
-- [ ] Separer installation atelier et installation hotspot
-- [ ] Tester OctoPrint avec la CR-10S assemblee
-- [ ] Tester mode kiosk HDMI
-- [ ] Tester hotspot WiFi
-- [ ] Identifier l'ecran et la carte mere CR-10S
-- [ ] Preparer un logo 128x64 pour test firmware
+- [x] PWA museale
+- [x] API Flask Replicator
+- [x] Cle API OctoPrint via `/etc/replicator2.env`
+- [x] Nginx `/api/` vers Flask
+- [x] Nginx `/octoprint/` vers OctoPrint
+- [x] Kiosk Chromium via `replicator-kiosk`
+- [x] Autologin console
+- [x] Rotation ecran/tactile Waveshare
+- [x] Cache PWA `v18`
+- [x] G-code manuel via API Flask
+- [ ] Tester toutes les choregraphies une par une sur machine surveillee
+- [ ] Faire image backup carte SD
+- [ ] Stabiliser alimentation Raspberry
+- [ ] Decider si hotspot exposition doit etre active
+- [ ] Identifier ecran/carte mere CR-10S pour phase firmware
 
 ---
 
