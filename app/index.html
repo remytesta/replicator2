@@ -7,8 +7,11 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Replicator 2</title>
-  <link rel="manifest" href="manifest.json?v=15">
-  <link rel="stylesheet" href="styles.css?v=15">
+  <link rel="manifest" href="manifest.json?v=17">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Dosis:wght@400;700&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=17">
 </head>
 <body>
   <main class="app-shell" id="app">
@@ -17,7 +20,6 @@
     <section class="screen screen-home is-active" id="homeScreen" aria-labelledby="homeTitle">
       <h1 class="sr-only" id="homeTitle">Replicator 2</h1>
       <div class="sketch-stage" id="sketchStage" aria-label="Dessin interactif Replicator 2">
-        <div class="sketch-title" aria-hidden="true">Replicator 2</div>
         <div class="sketch-art">
           <div class="sketch-container">
             <img class="sketch-base" src="main/png/main-croquis.png" alt="Croquis de l'installation Replicator 2">
@@ -31,11 +33,11 @@
     <section class="screen screen-console" id="consoleScreen" aria-labelledby="consoleTitle">
       <header class="topbar">
         <div>
-          <p class="kicker">Machine</p>
           <h2 id="consoleTitle">Console</h2>
         </div>
         <button class="nav-action icon-action" data-route="home" type="button" aria-label="Retour au croquis">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+          <span>Chapelle</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </button>
       </header>
 
@@ -57,7 +59,8 @@
           </div>
         </div>
         <button class="nav-action icon-action" data-route="home" type="button" aria-label="Retour au croquis">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+          <span>Chapelle</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </button>
       </header>
 
@@ -66,16 +69,12 @@
       </div>
 
       <div class="slider-controls">
-        <button class="arrow-btn" id="prevSlideBtn" type="button" aria-label="Face precedente">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7"/></svg>
-        </button>
         <div class="slide-dots" id="slideDots"></div>
         <button class="arrow-btn" id="nextSlideBtn" type="button" aria-label="Face suivante">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
+          <span>SCENE SUIVANTE</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </button>
       </div>
-
-      <nav class="vase-nav" id="vaseNav" aria-label="Changer de vase"></nav>
 
       <article class="vase-copy">
         <img class="vase-copy-thumb" id="vaseCopyThumb" alt="">
@@ -90,7 +89,7 @@
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
   </main>
 
-  <script src="vases-data.js?v=15"></script>
+  <script src="vases-data.js?v=17"></script>
   <script>
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.getRegistrations()
@@ -104,6 +103,6 @@
         .catch(() => {});
     }
   </script>
-  <script src="app.js?v=15"></script>
+  <script src="app.js?v=17"></script>
 </body>
 </html>
